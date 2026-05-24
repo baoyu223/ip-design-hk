@@ -1,0 +1,127 @@
+// app.jsx — Ignition Brand Design — main app
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "dark",
+  "accent": "#F5F1E8",
+  "heroVariant": "sunburst",
+  "displayFont": "manrope"
+}/*EDITMODE-END*/;
+
+const ACCENT_OPTIONS = ["#F5F1E8", "#C9A961", "#D4D4D4", "#9CB4CC"];
+const ACCENT_LABELS  = { "#F5F1E8":"冷米白", "#C9A961":"浅金", "#D4D4D4":"铂金", "#9CB4CC":"雾蓝" };
+const FONT_OPTIONS = [
+  { id:"manrope", label:"Manrope · 重粗几何", stack:"'Manrope', 'Noto Sans TC', 'PingFang TC', sans-serif" },
+  { id:"sora",    label:"Sora · 现代克制",    stack:"'Sora', 'Noto Sans TC', sans-serif" },
+  { id:"space",   label:"Space Grotesk · 科技", stack:"'Space Grotesk', 'Noto Sans TC', sans-serif" },
+];
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [active, setActive] = React.useState("home");
+  const [selectedTier, setSelectedTier] = React.useState(null);
+  const [cases, setCases] = React.useState([]);
+
+  // 从 Sanity 后台拉取作品案例数据
+  // Project ID: 6fxw2dmo · Dataset: production
+  React.useEffect(() => {
+    const projectId = "6fxw2dmo";
+    const dataset = "production";
+    const query = `*[_type == "case" && !(_id in path("drafts.**"))] | order(featured desc, year desc, _createdAt desc){
+      _id, title, description, category, year, "image": image.asset->url, size, featured
+    }`;
+    const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodeURIComponent(query)}`;
+    fetch(url)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.result && data.result.length > 0) {
+          setCases(data.result);
+        }
+      })
+      .catch(err => console.warn("Sanity 后台未连接或无内容，显示占位案例：", err));
+  }, []);
+
+  // theme + accent + font as live CSS vars
+  React.useEffect(() => {
+    document.body.classList.toggle("light", t.theme === "light");
+    document.documentElement.style.setProperty("--accent", t.accent);
+    const font = FONT_OPTIONS.find(f => f.id === t.displayFont) || FONT_OPTIONS[0];
+    document.documentElement.style.setProperty("--font-display", font.stack);
+  }, [t.theme, t.accent, t.displayFont]);
+
+  // smooth scroll on nav click
+  const onNav = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior:"smooth", block:"start" });
+  };
+
+  // scroll-spy
+  React.useEffect(() => {
+    const ids = ["home","about","services","method","clients","cases","pricing","contact"];
+    const handler = () => {
+      const y = window.scrollY + 120;
+      let cur = "home";
+      for (const id of ids) {
+        const el = document.getElementById(id);
+        if (el && el.offsetTop <= y) cur = id;
+      }
+      setActive(cur);
+    };
+    handler();
+    window.addEventListener("scroll", handler, { passive:true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  // fade-up on intersect
+  React.useEffect(() => {
+    const els = document.querySelectorAll(".fade-up");
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("in") });
+    }, { threshold: 0.15 });
+    els.forEach(el => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <>
+      <ShapeDefs />
+      <Nav active={active} onNav={onNav} />
+      <main>
+        <Hero variant={t.heroVariant} />
+        <Marquee />
+        <About />
+        <Services />
+        <Methodology />
+        <Clients />
+        <Cases cases={cases} />
+        <Pricing onPick={setSelectedTier} />
+        <Contact selectedTier={selectedTier} onTierChange={setSelectedTier} />
+      </main>
+      <Footer />
+
+      <TweaksPanel title="Tweaks · 燃點">
+        <TweakSection label="主题模式" />
+        <TweakRadio label="背景" value={t.theme} options={["dark","light"]}
+          onChange={(v)=>setTweak("theme", v)} />
+
+        <TweakSection label="点缀色" />
+        <TweakColor label="Accent" value={t.accent} options={ACCENT_OPTIONS}
+          onChange={(v)=>setTweak("accent", v)} />
+        <div style={{ fontSize:10.5, color:"rgba(41,38,27,.55)", marginTop:-4 }}>
+          当前 · {ACCENT_LABELS[t.accent] || t.accent}
+        </div>
+
+        <TweakSection label="Hero 版式" />
+        <TweakSelect label="Hero variant" value={t.heroVariant}
+          options={[{value:"sunburst",label:"放射光环 (默认)"},{value:"minimal",label:"极简留白"},{value:"grid",label:"网格"}]}
+          onChange={(v)=>setTweak("heroVariant", v)} />
+
+        <TweakSection label="标题字体气质" />
+        <TweakSelect label="Display font" value={t.displayFont}
+          options={FONT_OPTIONS.map(f => ({ value:f.id, label:f.label }))}
+          onChange={(v)=>setTweak("displayFont", v)} />
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
