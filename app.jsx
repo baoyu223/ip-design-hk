@@ -20,6 +20,19 @@ function App() {
   const [active, setActive] = React.useState("home");
   const [selectedTier, setSelectedTier] = React.useState(null);
   const [cases, setCases] = React.useState([]);
+  const [openCase, setOpenCase] = React.useState(null);
+
+  React.useEffect(() => {
+    document.body.style.overflow = openCase ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [openCase]);
+
+  React.useEffect(() => {
+    if (!openCase) return;
+    const onKey = (e) => { if (e.key === "Escape") setOpenCase(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openCase]);
 
   // 从 Sanity 后台拉取作品案例数据
   // Project ID: 6fxw2dmo · Dataset: production
@@ -27,7 +40,20 @@ function App() {
     const projectId = "6fxw2dmo";
     const dataset = "production";
     const query = `*[_type == "case" && !(_id in path("drafts.**"))] | order(featured desc, year desc, _createdAt desc){
-      _id, title, description, category, year, "image": image.asset->url, size, featured
+      _id, title, description, category, year,
+      "image": image.asset->url,
+      size, featured,
+      client, services, body, link,
+      "gallery": gallery[]{
+        "url": asset->url,
+        caption
+      },
+      "pdfs": pdfs[]{
+        title,
+        description,
+        "url": file.asset->url,
+        "filename": file.asset->originalFilename
+      }
     }`;
     const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodeURIComponent(query)}`;
     fetch(url)
@@ -92,7 +118,8 @@ function App() {
         <Services />
         <Methodology />
         <Clients />
-        <Cases cases={cases} />
+        <Cases cases={cases} onOpen={setOpenCase} />
+        {openCase && <CaseModal data={openCase} onClose={() => setOpenCase(null)} />}
         <Pricing onPick={setSelectedTier} />
         <Contact selectedTier={selectedTier} onTierChange={setSelectedTier} />
       </main>

@@ -48,7 +48,35 @@ export default {
     { name: "body", title: "詳細描述", type: "array", of: [{ type: "block" }] },
     {
       name: "gallery", title: "細節圖（多張）", type: "array",
+      description: "可一次選擇或拖入多張圖片；圖片會按這裡的順序顯示在案例詳情。",
       of: [{ type: "image", options: { hotspot: true }, fields: [{ name: "caption", title: "圖片說明", type: "string" }] }],
+    },
+    {
+      name: "pdfs", title: "PDF 文件（可多個）", type: "array",
+      description: "可上傳作品集、品牌手冊、案例簡報等 PDF；前台會顯示為查看/下載按鈕。",
+      of: [
+        {
+          type: "object",
+          title: "PDF 文件",
+          fields: [
+            { name: "title", title: "文件標題", type: "string", validation: (R) => R.required().max(80) },
+            { name: "description", title: "文件說明", type: "string", validation: (R) => R.max(120) },
+            {
+              name: "file",
+              title: "上傳 PDF",
+              type: "file",
+              options: { accept: ".pdf,application/pdf" },
+              validation: (R) => R.required(),
+            },
+          ],
+          preview: {
+            select: { title: "title", subtitle: "description", media: "file" },
+            prepare({ title, subtitle }) {
+              return { title: title || "PDF 文件", subtitle: subtitle || "點擊編輯文件" };
+            },
+          },
+        },
+      ],
     },
     { name: "link", title: "外部鏈接", type: "url" },
   ],

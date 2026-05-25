@@ -321,7 +321,24 @@ const IP_COMPONENTS = {
   IPExtend: () => <IPExtend />, IPSculpt: () => <IPSculpt />,
 };
 
-const Cases = ({ cases }) => {
+const getCaseTitle = (c) => c.h || c.title || "Untitled Case";
+const getCaseDescription = (c) => c.zh || c.description || "";
+const getCaseCategory = (c) => c.tag || c.category || "WORK";
+const getCaseImages = (c) => {
+  const gallery = (c.gallery || []).filter(item => item && item.url);
+  const cover = c.image ? [{ url: c.image, caption: "Cover" }] : [];
+  const galleryUrls = new Set(gallery.map(item => item.url));
+  return [...cover.filter(item => !galleryUrls.has(item.url)), ...gallery];
+};
+const renderPortableText = (blocks) => {
+  if (!blocks || !blocks.length) return null;
+  return blocks.map((block, i) => {
+    const text = (block.children || []).map(child => child.text || "").join("");
+    return text ? <p key={block._key || i}>{text}</p> : null;
+  });
+};
+
+const Cases = ({ cases, onOpen }) => {
   // 来自 Sanity 后台的数据优先；空时使用 fallback 占位
   const fromSanity = cases && cases.length > 0;
   const list = fromSanity ? cases : CASES_FALLBACK;
@@ -342,7 +359,19 @@ const Cases = ({ cases }) => {
             const hasImage = !!c.image;
             const PlaceholderIP = IP_COMPONENTS[c.Vis] || IP_COMPONENTS.IPSparky;
             return (
-              <article key={c._id || i} className={`case ${isBig?"big":""} ${isWide?"wide":""} ${hasImage?"has-image":""}`}>
+              <article
+                key={c._id || i}
+                className={`case ${isBig?"big":""} ${isWide?"wide":""} ${hasImage?"has-image":""} ${fromSanity?"is-clickable":""}`}
+                role={fromSanity ? "button" : undefined}
+                tabIndex={fromSanity ? 0 : undefined}
+                onClick={() => fromSanity && onOpen && onOpen(c)}
+                onKeyDown={(e) => {
+                  if (fromSanity && onOpen && (e.key === "Enter" || e.key === " ")) {
+                    e.preventDefault();
+                    onOpen(c);
+                  }
+                }}
+              >
                 {hasImage ? (
                   <div className="case-image" style={{ backgroundImage:`url(${c.image})` }}>
                     <div className="case-image-veil"/>
@@ -352,14 +381,14 @@ const Cases = ({ cases }) => {
                     <PlaceholderIP />
                   </div>
                 )}
-                <span className="case-tag">{c.tag || c.category}</span>
+                <span className="case-tag">{getCaseCategory(c)}</span>
                 <div className="case-meta">
                   <span>{String(i+1).padStart(2,"0")}</span>
                   <span>{c.year ? `HK · ${c.year}` : "HK · 2024-26"}</span>
                 </div>
                 <div className="case-foot">
-                  <h4>{c.h || c.title}</h4>
-                  <p>{c.zh || c.description}</p>
+                  <h4>{getCaseTitle(c)}</h4>
+                  <p>{getCaseDescription(c)}</p>
                 </div>
               </article>
             );
@@ -370,4 +399,81 @@ const Cases = ({ cases }) => {
   );
 };
 
-Object.assign(window, { Nav, Hero, Marquee, About, Services, Methodology, Cases, NAV });
+const CaseModal = ({ data, onClose }) => {
+  const images = getCaseImages(data);
+  const pdfs = (data.pdfs || []).filter(pdf => pdf && pdf.url);
+  const hasDetails = data.client || data.services?.length || data.body?.length || data.link || pdfs.length;
+
+  return (
+    <div className="case-modal" role="dialog" aria-modal="true" aria-label={getCaseTitle(data)} onClick={onClose}>
+      <div className="case-modal-panel" onClick={(e) => e.stopPropagation()}>
+        <button className="case-modal-close" type="button" onClick={onClose} aria-label="關閉案例詳情">×</button>
+
+        <div className="case-modal-head">
+          <div>
+            <div className="case-modal-kicker">
+              <span>{getCaseCategory(data)}</span>
+              {data.year && <span>{data.year}</span>}
+            </div>
+            <h3>{getCaseTitle(data)}</h3>
+            {getCaseDescription(data) && <p>{getCaseDescription(data)}</p>}
+          </div>
+          {data.link && (
+            <a className="case-link" href={data.link} target="_blank" rel="noreferrer">外部連結</a>
+          )}
+        </div>
+
+        {images.length > 0 && (
+          <div className="case-gallery">
+            {images.map((img, i) => (
+              <figure key={`${img.url}-${i}`} className={i === 0 ? "lead" : ""}>
+                <img src={img.url} alt={img.caption || getCaseTitle(data)} loading={i === 0 ? "eager" : "lazy"} />
+                {img.caption && img.caption !== "Cover" && <figcaption>{img.caption}</figcaption>}
+              </figure>
+            ))}
+          </div>
+        )}
+
+        {hasDetails && (
+          <div className="case-detail-grid">
+            <div className="case-detail-meta">
+              {data.client && (
+                <div>
+                  <b>CLIENT</b>
+                  <span>{data.client}</span>
+                </div>
+              )}
+              {data.services?.length > 0 && (
+                <div>
+                  <b>SERVICES</b>
+                  <span>{data.services.join(" · ")}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="case-detail-body">
+              {renderPortableText(data.body)}
+
+              {pdfs.length > 0 && (
+                <div className="case-pdfs">
+                  <h4>PDF 文件</h4>
+                  {pdfs.map((pdf, i) => (
+                    <a key={`${pdf.url}-${i}`} href={pdf.url} target="_blank" rel="noreferrer" className="pdf-card">
+                      <span className="pdf-mark">PDF</span>
+                      <span>
+                        <strong>{pdf.title || pdf.filename || `PDF ${i + 1}`}</strong>
+                        {(pdf.description || pdf.filename) && <em>{pdf.description || pdf.filename}</em>}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+Object.assign(window, { Nav, Hero, Marquee, About, Services, Methodology, Cases, CaseModal, NAV });
