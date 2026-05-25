@@ -34,6 +34,19 @@ function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [openCase]);
 
+  // 默认进入作品案例区；如果网址带有其他 #锚点，则尊重用户指定位置。
+  React.useEffect(() => {
+    if (window.location.hash) return;
+    const timer = window.setTimeout(() => {
+      const el = document.getElementById("cases");
+      if (el) {
+        el.scrollIntoView({ block: "start" });
+        window.history.replaceState(null, "", "#cases");
+      }
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   // 从 Sanity 后台拉取作品案例数据
   // Project ID: 6fxw2dmo · Dataset: production
   React.useEffect(() => {
@@ -47,6 +60,12 @@ function App() {
       "gallery": gallery[]{
         "url": asset->url,
         caption
+      },
+      "videos": videos[]{
+        title,
+        caption,
+        "url": file.asset->url,
+        "filename": file.asset->originalFilename
       },
       "pdfs": pdfs[]{
         title,

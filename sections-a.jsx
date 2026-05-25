@@ -337,6 +337,34 @@ const renderPortableText = (blocks) => {
     return text ? <p key={block._key || i}>{text}</p> : null;
   });
 };
+const getCaseShareUrl = (data) => {
+  const base = window.location.origin + window.location.pathname;
+  const id = data._id ? `case-${encodeURIComponent(data._id)}` : "cases";
+  return `${base}#${id}`;
+};
+const shareCase = (data, channel) => {
+  const title = getCaseTitle(data);
+  const text = getCaseDescription(data);
+  const url = getCaseShareUrl(data);
+
+  if (channel === "native" && navigator.share) {
+    navigator.share({ title, text, url }).catch(() => {});
+    return;
+  }
+
+  if (channel === "facebook") {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  if (channel === "x") {
+    window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  if (navigator.clipboard) navigator.clipboard.writeText(url).catch(() => {});
+  if (channel === "instagram") window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
+};
 
 const Cases = ({ cases, onOpen }) => {
   // 来自 Sanity 后台的数据优先；空时使用 fallback 占位
@@ -361,6 +389,7 @@ const Cases = ({ cases, onOpen }) => {
             return (
               <article
                 key={c._id || i}
+                id={c._id ? `case-${c._id}` : undefined}
                 className={`case ${isBig?"big":""} ${isWide?"wide":""} ${hasImage?"has-image":""} ${fromSanity?"is-clickable":""}`}
                 role={fromSanity ? "button" : undefined}
                 tabIndex={fromSanity ? 0 : undefined}
@@ -401,8 +430,9 @@ const Cases = ({ cases, onOpen }) => {
 
 const CaseModal = ({ data, onClose }) => {
   const images = getCaseImages(data);
+  const videos = (data.videos || []).filter(video => video && video.url);
   const pdfs = (data.pdfs || []).filter(pdf => pdf && pdf.url);
-  const hasDetails = data.client || data.services?.length || data.body?.length || data.link || pdfs.length;
+  const hasDetails = data.client || data.services?.length || data.body?.length || data.link || data.body?.length || pdfs.length;
 
   return (
     <div className="case-modal" role="dialog" aria-modal="true" aria-label={getCaseTitle(data)} onClick={onClose}>
@@ -423,17 +453,6 @@ const CaseModal = ({ data, onClose }) => {
           )}
         </div>
 
-        {images.length > 0 && (
-          <div className="case-gallery">
-            {images.map((img, i) => (
-              <figure key={`${img.url}-${i}`} className={i === 0 ? "lead" : ""}>
-                <img src={img.url} alt={img.caption || getCaseTitle(data)} loading={i === 0 ? "eager" : "lazy"} />
-                {img.caption && img.caption !== "Cover" && <figcaption>{img.caption}</figcaption>}
-              </figure>
-            ))}
-          </div>
-        )}
-
         {hasDetails && (
           <div className="case-detail-grid">
             <div className="case-detail-meta">
@@ -449,26 +468,63 @@ const CaseModal = ({ data, onClose }) => {
                   <span>{data.services.join(" · ")}</span>
                 </div>
               )}
+              <div>
+                <b>SHARE</b>
+                <div className="case-share">
+                  <button type="button" onClick={() => shareCase(data, "native")}>朋友圈</button>
+                  <button type="button" onClick={() => shareCase(data, "facebook")}>Facebook</button>
+                  <button type="button" onClick={() => shareCase(data, "instagram")}>Instagram</button>
+                  <button type="button" onClick={() => shareCase(data, "x")}>X</button>
+                </div>
+              </div>
             </div>
 
             <div className="case-detail-body">
               {renderPortableText(data.body)}
-
-              {pdfs.length > 0 && (
-                <div className="case-pdfs">
-                  <h4>PDF 文件</h4>
-                  {pdfs.map((pdf, i) => (
-                    <a key={`${pdf.url}-${i}`} href={pdf.url} target="_blank" rel="noreferrer" className="pdf-card">
-                      <span className="pdf-mark">PDF</span>
-                      <span>
-                        <strong>{pdf.title || pdf.filename || `PDF ${i + 1}`}</strong>
-                        {(pdf.description || pdf.filename) && <em>{pdf.description || pdf.filename}</em>}
-                      </span>
-                    </a>
-                  ))}
-                </div>
-              )}
             </div>
+          </div>
+        )}
+
+        {images.length > 0 && (
+          <div className="case-gallery">
+            {images.map((img, i) => (
+              <figure key={`${img.url}-${i}`} className={i === 0 ? "lead" : ""}>
+                <img src={img.url} alt={img.caption || getCaseTitle(data)} loading={i === 0 ? "eager" : "lazy"} />
+                {img.caption && img.caption !== "Cover" && <figcaption>{img.caption}</figcaption>}
+              </figure>
+            ))}
+          </div>
+        )}
+
+        {videos.length > 0 && (
+          <div className="case-videos">
+            <h4>影片</h4>
+            {videos.map((video, i) => (
+              <figure key={`${video.url}-${i}`}>
+                <video src={video.url} controls playsInline preload="metadata" />
+                {(video.title || video.caption || video.filename) && (
+                  <figcaption>
+                    <strong>{video.title || video.filename}</strong>
+                    {(video.caption || video.filename) && <span>{video.caption || video.filename}</span>}
+                  </figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        )}
+
+        {pdfs.length > 0 && (
+          <div className="case-pdfs">
+            <h4>PDF 文件</h4>
+            {pdfs.map((pdf, i) => (
+              <a key={`${pdf.url}-${i}`} href={pdf.url} target="_blank" rel="noreferrer" className="pdf-card">
+                <span className="pdf-mark">PDF</span>
+                <span>
+                  <strong>{pdf.title || pdf.filename || `PDF ${i + 1}`}</strong>
+                  {(pdf.description || pdf.filename) && <em>{pdf.description || pdf.filename}</em>}
+                </span>
+              </a>
+            ))}
           </div>
         )}
       </div>
