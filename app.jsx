@@ -107,9 +107,26 @@ function App() {
         "filename": file.asset->originalFilename
       }
     }`;
-    const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodeURIComponent(query)}`;
-    fetch(url)
-      .then(r => r.ok ? r.json() : null)
+    const encodedQuery = encodeURIComponent(query);
+    const urls = [
+      `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodedQuery}&_ts=${Date.now()}`,
+      `https://${projectId}.api.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodedQuery}`,
+    ];
+    const loadCases = async () => {
+      let lastError = null;
+      for (const url of urls) {
+        try {
+          const response = await fetch(url, { cache: "no-store" });
+          if (!response.ok) throw new Error(`Sanity responded ${response.status}`);
+          const data = await response.json();
+          if (data && data.result && data.result.length > 0) return data;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw lastError || new Error("No Sanity case data");
+    };
+    loadCases()
       .then(data => {
         if (data && data.result && data.result.length > 0) {
           setCases(data.result);

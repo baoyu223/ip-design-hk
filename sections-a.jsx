@@ -75,21 +75,31 @@ const HeroClientOrbit = () => (
 );
 
 const HERO_IPS = [
-  { src: "assets/ip-orange.png", text: "嗨，品牌也可以有性格。" },
-  { src: "assets/ip-walker.png", text: "把角色變成可生長的資產。" },
-  { src: "assets/ip-skater.png", text: "IP 不是裝飾，是故事入口。" },
-  { src: "assets/ip-white-skater.png", text: "讓客戶記住你的品牌。" },
+  { src: "assets/ip-scene-fluffy.png", name: "角色世界觀" },
+  { src: "assets/ip-scene-cloud.png", name: "情緒記憶點" },
+  { src: "assets/ip-scene-dino.png", name: "品牌人格" },
+  { src: "assets/ip-scene-robot.png", name: "互動內容" },
+  { src: "assets/ip-scene-sprout.png", name: "產品延展" },
+  { src: "assets/ip-scene-pink.png", name: "商業轉化" },
 ];
 
-const HeroIPCharacters = () => (
-  <div className="hero-ip-layer" aria-hidden="true">
+const HeroIPScene = () => (
+  <div className="hero-ip-scene" aria-label="IP品牌策劃設計角色場景">
+    <div className="ip-scene-title">
+      <span>IP品牌策划设计</span>
+      <small>IP Brand Strategy & Design</small>
+    </div>
+    <div className="ip-scene-deck">
     {HERO_IPS.map((ip, i) => (
-      <figure className={`ip-pop ip-pop-${i + 1}`} key={ip.src}>
-        <span className="ip-wave"></span>
+      <figure className={`ip-avatar ip-avatar-${i + 1}`} key={ip.src}>
         <img src={ip.src} alt="" />
-        <figcaption>{ip.text}</figcaption>
+        <figcaption>{ip.name}</figcaption>
       </figure>
     ))}
+    </div>
+    <div className="ip-scene-greeting">
+      <span>Hi，讓品牌被看見，也被記住。</span>
+    </div>
   </div>
 );
 
@@ -107,7 +117,7 @@ const Hero = ({ variant = "sunburst" }) => (
         <Sunburst className="sun" color="var(--paper)" />
         <div className="tech-field"></div>
         <HeroClientOrbit />
-        <HeroIPCharacters />
+        <HeroIPScene />
       </div>
     )}
     {variant === "minimal" && (
