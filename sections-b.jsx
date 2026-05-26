@@ -212,10 +212,10 @@ const Contact = ({ selectedTier, onTierChange }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const Footer = () => (
   <footer>
-    <div className="shell" style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", width:"100%", gap:32, flexWrap:"wrap" }}>
-      <div>
+    <div className="shell footer-inner">
+      <div className="footer-main">
         <div className="f-brand">IBD<span className="star"> ✦ </span>燃點品牌設計</div>
-        <div style={{ marginTop:8, fontSize:11, color:"var(--mute)" }}>© 2026 Ignition Brand Design Ltd. All rights reserved.</div>
+        <div className="f-copy">© 2026 Ignition Brand Design Ltd. All rights reserved.</div>
       </div>
       <div className="f-soc">
         <a href="#">INSTAGRAM</a>
@@ -223,7 +223,7 @@ const Footer = () => (
         <a href="#">BEHANCE</a>
         <a href="#">WECHAT</a>
       </div>
-      <div style={{ fontSize:11, color:"var(--mute)" }}>HONG KONG · SHENZHEN · TOKYO</div>
+      <div className="f-locations">HONG KONG · SHENZHEN · TOKYO</div>
     </div>
   </footer>
 );

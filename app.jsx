@@ -173,8 +173,8 @@ function App() {
         <About />
         <Services />
         <Methodology />
-        <Clients />
         <Cases cases={cases} onOpen={openCaseDetail} />
+        <Clients />
         {openCase && <CaseModal data={openCase} onClose={closeCaseDetail} />}
         <Pricing onPick={setSelectedTier} />
         <Contact selectedTier={selectedTier} onTierChange={setSelectedTier} />

@@ -8,7 +8,7 @@ const Sparkle = ({ size = 24, color = "currentColor", style }) => (
 );
 
 // The signature radiating ring from the brand poster. Procedurally generated rays.
-const Sunburst = ({ rays = 72, innerRays = 60, color = "currentColor", className }) => {
+const Sunburst = ({ rays = 48, innerRays = 36, color = "currentColor", className }) => {
   const outer = [];
   for (let i = 0; i < rays; i++) {
     const angle = (i / rays) * 360;
