@@ -24,7 +24,7 @@ button{font:inherit;color:inherit}
 
 /* light mode */
 body.light{background:var(--ink);color:var(--paper)}
-body.light{--ink:#F7F3EA;--ink-2:#ECE6D8;--ink-3:#DED6C5;--paper:#111111;--paper-2:#2A2925;--line:rgba(17,17,17,.13);--line-strong:rgba(17,17,17,.28);--mute:rgba(17,17,17,.62);--mute-2:rgba(17,17,17,.44);--accent:#111111}
+body.light{--ink:#FFFFFF;--ink-2:#F5F5F5;--ink-3:#ECECEC;--paper:#000000;--paper-2:#1A1A1A;--line:rgba(0,0,0,.12);--line-strong:rgba(0,0,0,.28);--mute:rgba(0,0,0,.62);--mute-2:rgba(0,0,0,.44);--accent:#000000}
 
 /* ===== Layout ===== */
 .shell{max-width:1440px;margin:0 auto;padding:0 56px}
