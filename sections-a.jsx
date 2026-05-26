@@ -120,7 +120,7 @@ const Hero = ({ variant = "sunburst" }) => (
       <div className="hero-bottom">
         <div>
           <div className="lbl">EST.</div>
-          <div className="v">Hong Kong · 2005</div>
+          <div className="v">Hong Kong · 2010</div>
         </div>
         <div>
           <div className="lbl">DISCIPLINE</div>
@@ -174,19 +174,22 @@ const About = () => (
       <div className="about-grid">
         <div className="about-manifesto">
           燃點是植根香港的高端視覺實驗室。我們不做廉價的「平面美化」——
-          <span className="accent">二十年頂尖設計沉澱</span>，被我們重塑為一套可被商業驗證的方法：
+          <span className="accent">十五年以上設計沉澱</span>，被我們重塑為一套可被商業驗證的方法：
           將品牌基因解碼成「超級 IP」，讓 IP 以潮玩規格進入產品線、進入聯名、進入盲盒、進入 Z 世代的私域。
           <br/><br/>
           一個沒有故事的形象，是空殼。一個沒有商業閉環的 IP，是擺設。
           我們交付的，是品牌可長期持有的<span className="accent">資產</span>。
+          <p className="about-en">
+            Ignition is a Hong Kong based visual lab turning brand DNA into lasting commercial assets. We build identities, IP systems and packaging worlds that can live across products, collaborations, content and culture.
+          </p>
         </div>
         <div className="about-stats">
           <div className="stat">
-            <div className="v">20<span className="pp">+</span></div>
+            <div className="v">15<span className="pp">+</span></div>
             <div className="k">YEARS · 設計沉澱</div>
           </div>
           <div className="stat">
-            <div className="v">140<span className="pp">+</span></div>
+            <div className="v">100<span className="pp">+</span></div>
             <div className="k">BRANDS · 服務品牌</div>
           </div>
           <div className="stat">
@@ -195,7 +198,7 @@ const About = () => (
           </div>
           <div className="stat">
             <div className="v">9<span className="pp">×</span></div>
-            <div className="k">AWARDS · 國際獎項</div>
+            <div className="k">AWARDS · 獎項</div>
           </div>
         </div>
       </div>

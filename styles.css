@@ -69,13 +69,13 @@ section:first-of-type{border-top:0}
 .hero-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .hero-bg .sun{width:min(82vh,1100px);aspect-ratio:1/1;opacity:.72;animation:spin 96s linear infinite}
 .tech-field{position:absolute;inset:0;z-index:0;opacity:.42;background:
-  radial-gradient(circle at 18% 26%, color-mix(in srgb, var(--paper) 48%, transparent) 0 1px, transparent 2px),
-  radial-gradient(circle at 76% 18%, color-mix(in srgb, var(--paper) 38%, transparent) 0 1px, transparent 2px),
-  radial-gradient(circle at 62% 72%, color-mix(in srgb, var(--paper) 44%, transparent) 0 1px, transparent 2px),
-  radial-gradient(circle at 32% 82%, color-mix(in srgb, var(--paper) 32%, transparent) 0 1px, transparent 2px),
-  radial-gradient(circle at 88% 62%, color-mix(in srgb, var(--paper) 36%, transparent) 0 1px, transparent 2px),
-  linear-gradient(110deg, transparent 0 40%, color-mix(in srgb, var(--paper) 7%, transparent) 50%, transparent 60%);
-  background-size:220px 220px,260px 260px,300px 300px,240px 240px,280px 280px,100% 100%;
+  radial-gradient(circle at 18% 26%, rgba(120,190,255,.88) 0 1.3px, transparent 2.6px),
+  radial-gradient(circle at 76% 18%, rgba(255,210,128,.82) 0 1.1px, transparent 2.4px),
+  radial-gradient(circle at 62% 72%, rgba(185,145,255,.82) 0 1.2px, transparent 2.5px),
+  radial-gradient(circle at 32% 82%, rgba(120,255,214,.7) 0 1px, transparent 2.2px),
+  radial-gradient(circle at 88% 62%, rgba(255,132,190,.72) 0 1.2px, transparent 2.6px),
+  linear-gradient(110deg, transparent 0 40%, color-mix(in srgb, var(--paper) 10%, transparent) 50%, transparent 60%);
+  background-size:210px 210px,260px 260px,310px 310px,230px 230px,280px 280px,100% 100%;
   mask-image:radial-gradient(circle at 50% 50%, transparent 0 19%, #000 30% 82%, transparent 96%);
   animation:starDrift 18s ease-in-out infinite alternate}
 .client-orbit{position:absolute;left:50%;top:50%;width:min(92vmin,1180px);height:min(92vmin,1180px);transform:translate(-50%,-50%);animation:orbitSpin 90s linear infinite;z-index:1;opacity:.9}
@@ -124,6 +124,7 @@ body:not(.light) .hero-wordmark-white{display:block}
 @media (max-width:880px){.about-grid{grid-template-columns:1fr;gap:48px}}
 .about-manifesto{font-family:var(--font-zh);font-weight:400;font-size:clamp(17px,1.55vw,23px);line-height:1.82;letter-spacing:.035em;color:var(--paper);max-width:38em}
 .about-manifesto .accent{color:var(--accent);font-weight:500}
+.about-en{font-family:var(--font-display);font-size:14px;line-height:1.75;letter-spacing:.02em;color:var(--mute);margin:28px 0 0;max-width:44em}
 .about-stats{display:grid;grid-template-columns:1fr 1fr;gap:32px 28px;border-top:1px solid var(--line);padding-top:32px}
 .stat .v{font-family:var(--font-display);font-weight:800;font-size:clamp(40px,5vw,64px);line-height:1;letter-spacing:-.02em}
 .stat .v .pp{color:var(--accent)}
@@ -152,6 +153,8 @@ body.light .svc:hover{background:var(--ink-2)}
   .sec-sub{font-size:14px;line-height:1.75;margin-bottom:36px}
   .about-grid{gap:34px}
   .about-manifesto{font-size:16px;line-height:1.86;letter-spacing:.03em}
+  .about-manifesto{text-align:justify;text-align-last:left}
+  .about-en{text-align:left;font-size:13px;line-height:1.7;margin-top:22px}
   .about-stats{gap:24px 18px}
   .stat .k{font-size:10px;line-height:1.45}
   .svc-grid{border:1px solid var(--line);border-radius:8px;overflow:hidden;gap:0}
@@ -284,9 +287,9 @@ body.light .m-vis{background:var(--ink-2)}
 .tier-num{font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;color:var(--accent);text-transform:uppercase}
 .tier-h{font-family:var(--font-display);font-weight:800;font-size:26px;letter-spacing:-.005em;margin:0;line-height:1.2}
 .tier-en{font-size:12px;color:var(--mute);letter-spacing:.06em;margin-top:-12px}
-.tier-price{display:flex;align-items:baseline;gap:6px;font-family:var(--font-display);padding-top:16px;border-top:1px solid var(--line)}
-.tier-price .num{font-weight:800;font-size:42px;letter-spacing:-.02em;color:var(--accent)}
-.tier-price .cur{font-size:13px;color:var(--mute);letter-spacing:.1em}
+.tier-price{display:flex;align-items:flex-start;gap:6px;font-family:var(--font-display);padding-top:16px;border-top:1px solid var(--line)}
+.tier-price .num{font-weight:800;font-size:28px;line-height:1.12;letter-spacing:-.02em;color:var(--accent);max-width:9em}
+.tier-price .cur{display:none}
 .tier-price .per{font-size:12px;color:var(--mute);margin-left:auto;letter-spacing:.04em}
 .tier-when{font-size:12px;color:var(--mute);letter-spacing:.04em}
 .tier ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
@@ -313,11 +316,11 @@ body.light .m-vis{background:var(--ink-2)}
 .contact-meta .row{display:grid;grid-template-columns:90px 1fr;gap:16px;padding:14px 0;border-top:1px solid var(--line)}
 .contact-meta .k{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);padding-top:2px}
 .contact-meta .v{color:var(--paper)}
-.form{display:flex;flex-direction:column;gap:18px}
+.form{display:flex;flex-direction:column;gap:18px;border:1px solid var(--line-strong);border-radius:10px;padding:28px;background:color-mix(in srgb, var(--paper) 2%, transparent)}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
 .field input,.field select,.field textarea{appearance:none;background:transparent;color:var(--paper);border:0;border-bottom:1px solid var(--line-strong);padding:10px 0;font:inherit;font-size:15px;outline:0;transition:border-color .25s}
-.field input::placeholder,.field textarea::placeholder{color:var(--mute-2)}
+.field input::placeholder,.field textarea::placeholder{color:color-mix(in srgb, var(--mute-2) 58%, transparent)}
 .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
 .field textarea{min-height:80px;resize:vertical;font-family:inherit}
 .field select{background:transparent;color:var(--paper)}
@@ -325,7 +328,7 @@ body.light .m-vis{background:var(--ink-2)}
 .tier-pick{display:flex;gap:8px;flex-wrap:wrap}
 .tier-pick button{padding:8px 12px;border:1px solid var(--line-strong);border-radius:999px;background:transparent;font-size:11.5px;letter-spacing:.06em;cursor:default;transition:all .2s}
 .tier-pick button.on{background:var(--accent);color:var(--ink);border-color:var(--accent)}
-.submit{align-self:flex-start;display:inline-flex;align-items:center;gap:12px;padding:14px 22px;border:1px solid var(--paper);border-radius:999px;background:var(--paper);color:var(--ink);font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;cursor:default;transition:all .25s;margin-top:6px}
+.submit{align-self:stretch;justify-content:center;display:inline-flex;align-items:center;gap:12px;padding:17px 24px;border:1px solid var(--accent);border-radius:999px;background:var(--accent);color:var(--ink);font-family:var(--font-display);font-weight:800;font-size:14px;letter-spacing:.08em;text-transform:uppercase;cursor:default;transition:all .25s;margin-top:10px;box-shadow:0 0 28px color-mix(in srgb, var(--accent) 18%, transparent)}
 .submit:hover{background:var(--accent);border-color:var(--accent)}
 .submit .arr{transition:transform .3s}
 .submit:hover .arr{transform:translateX(4px)}

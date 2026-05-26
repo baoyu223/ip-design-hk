@@ -15,10 +15,10 @@ const Sunburst = ({ rays = 48, innerRays = 36, color = "currentColor", className
     outer.push(
       <polygon
         key={`o${i}`}
-        points="0,-200 4,-340 -4,-340"
+        points={`0,-${190 + (i % 3) * 16} ${3.2 + (i % 2) * 1.2},-${300 + (i % 4) * 22} -${3.2 + (i % 2) * 1.2},-${300 + (i % 4) * 22}`}
         transform={`rotate(${angle})`}
         fill={color}
-        opacity={i % 2 ? 0.95 : 0.45}
+        opacity={i % 3 === 0 ? 0.95 : i % 3 === 1 ? 0.62 : 0.36}
       />
     );
   }
@@ -28,10 +28,10 @@ const Sunburst = ({ rays = 48, innerRays = 36, color = "currentColor", className
     inner.push(
       <polygon
         key={`i${i}`}
-        points="0,-130 2.4,-200 -2.4,-200"
+        points={`0,-${118 + (i % 2) * 10} 2.2,-${176 + (i % 3) * 16} -2.2,-${176 + (i % 3) * 16}`}
         transform={`rotate(${angle})`}
         fill={color}
-        opacity={i % 2 ? 0.9 : 0.5}
+        opacity={i % 2 ? 0.72 : 0.36}
       />
     );
   }

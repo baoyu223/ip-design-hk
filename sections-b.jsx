@@ -6,11 +6,11 @@
 const TIERS = [
   {
     n: "TIER / 01",
-    h: "輕量啟動",
-    en: "IP Visual Incubation",
-    price: "38–68K",
+    h: "品牌診斷",
+    en: "Find the ignition point",
+    price: "先釐清方向",
     when: "3–4 週",
-    blurb: "預算有限、初創期，或需要高質感 IP 試水市場。",
+    blurb: "適合正在起步、轉型或需要快速判斷 IP 方向的品牌。",
     feat: false,
     items: [
       "品牌基因解碼 + IP 世界觀設定",
@@ -22,11 +22,11 @@ const TIERS = [
   },
   {
     n: "TIER / 02",
-    h: "全案資產",
-    en: "Brand × IP Super Symbol",
-    price: "120–250K+",
+    h: "IP 資產化",
+    en: "Turn identity into assets",
+    price: "建立可生長系統",
     when: "6–8 週",
-    blurb: "傳統大廠年輕化升級、內地品牌出海或高端轉型。",
+    blurb: "將品牌視覺、角色 IP、包裝與內容語言整合成可落地的資產系統。",
     feat: true,
     items: [
       "包含 TIER 01 所有 IP 孵化",
@@ -39,11 +39,11 @@ const TIERS = [
   },
   {
     n: "TIER / 03",
-    h: "戰略陪跑",
-    en: "Commercial Design & Retainer",
-    price: "350K+",
+    h: "長期共創",
+    en: "Build the next brand chapter",
+    price: "一起推進市場",
     when: "3 個月開發 + 年度顧問",
-    blurb: "進軍潮玩、跨界聯名、長期品牌運營頭部客戶。",
+    blurb: "面向長線運營、聯名拓展、潮玩產品化與品牌內容持續生長。",
     feat: false,
     items: [
       "包含 TIER 02 所有設計交付",
@@ -56,20 +56,14 @@ const TIERS = [
   },
 ];
 
-const ADDONS = [
-  { h: "企業專屬定制字體", en: "Custom Typeface · CN/EN", p: "HK$ 80K 起" },
-  { h: "授權展 / 展位概念設計", en: "Exhibition Space Concept", p: "HK$ 50K 起" },
-  { h: "高階 3D 渲染 / 微動畫", en: "3D Render & Motion Sec.", p: "HK$ 15K / 秒" },
-];
-
 const Pricing = ({ onPick }) => (
   <section id="pricing" data-screen-label="06 Pricing">
     <div className="shell">
       <div className="sec-eyebrow">
         <span className="num">06 / 07</span><span>服務階梯  ·  PRICING TIERS</span><span className="line"/>
       </div>
-      <h2 className="sec-title">不按工時計費。<br/>按<span className="accent">資產價值</span>定價。</h2>
-      <p className="sec-sub">三個階梯，對應品牌不同生命週期。報價以港幣計，依實際體量浮動。</p>
+      <h2 className="sec-title">不是買一張圖。<br/>是啟動一套<span className="accent">生長系統</span>。</h2>
+      <p className="sec-sub">從品牌診斷、IP 資產化到長期共創，讓每一次設計投入都能沉澱為可展示、可延展、可轉化的品牌資產。</p>
 
       <div className="price-grid">
         {TIERS.map((t,i) => (
@@ -86,21 +80,9 @@ const Pricing = ({ onPick }) => (
             <ul>{t.items.map(it => <li key={it}>{it}</li>)}</ul>
             <div className="tier-cta">
               <a href="#contact" className="tier-btn" onClick={(e)=>{e.preventDefault(); onPick && onPick(t.h); document.getElementById("contact").scrollIntoView({behavior:"smooth", block:"start"})}}>
-                選擇此階梯 <span>→</span>
+                開始討論 <span>→</span>
               </a>
             </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="addons">
-        {ADDONS.map((a,i) => (
-          <div key={i} className="addon">
-            <div>
-              <h5>{a.h}</h5>
-              <div className="a-en">{a.en}</div>
-            </div>
-            <div className="a-p">{a.p}</div>
           </div>
         ))}
       </div>
@@ -151,7 +133,7 @@ const Contact = ({ selectedTier, onTierChange }) => {
               </div>
               <div className="row">
                 <div className="k">Email</div>
-                <div className="v">baoguangwen7708@gmail.com</div>
+                <div className="v">hello@ip-design.hk</div>
               </div>
               <div className="row">
                 <div className="k">Hours</div>
@@ -173,15 +155,15 @@ const Contact = ({ selectedTier, onTierChange }) => {
               <form className="form" onSubmit={(e)=>{e.preventDefault(); setSubmitted(true)}}>
                 <div className="field">
                   <label>1 · 你的稱呼 / NAME</label>
-                  <input placeholder="Lin Hai-Ming · 林先生" required />
+                  <input placeholder="例如：林先生 / Ms. Chan" required />
                 </div>
                 <div className="field">
                   <label>2 · 品牌 / BRAND</label>
-                  <input placeholder="品牌名稱 · 行業" required />
+                  <input placeholder="你的品牌名稱、行業或產品方向" required />
                 </div>
                 <div className="field">
                   <label>3 · 聯絡方式 / CONTACT</label>
-                  <input placeholder="email · wechat · phone" required />
+                  <input placeholder="Email / WeChat / WhatsApp" required />
                 </div>
                 <div className="field">
                   <label>4 · 意向階梯 / TIER</label>
@@ -193,10 +175,10 @@ const Contact = ({ selectedTier, onTierChange }) => {
                 </div>
                 <div className="field">
                   <label>5 · 項目簡述 / BRIEF</label>
-                  <textarea placeholder="背景 · 目標 · 期望時間 · 預算範圍" rows={3} required />
+                  <textarea placeholder="簡單說說你的品牌背景、想解決的問題、希望達成的效果" rows={3} required />
                 </div>
                 <button type="submit" className="submit">
-                  發送初步診斷請求 <span className="arr">→</span>
+                  馬上開啟你的品牌 IP <span className="arr">→</span>
                 </button>
               </form>
             )}
@@ -223,7 +205,7 @@ const Footer = () => (
         <a href="#">BEHANCE</a>
         <a href="#">WECHAT</a>
       </div>
-      <div className="f-locations">HONG KONG · SHENZHEN · TOKYO</div>
+      <div className="f-locations">HONG KONG</div>
     </div>
   </footer>
 );
