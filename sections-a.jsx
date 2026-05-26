@@ -214,18 +214,25 @@ const About = () => (
 );
 
 const TESTIMONIALS = [
-  { brand:"零售集團", text:"燃點能很快抓住品牌年輕化的核心，不只是改好看，而是讓整套視覺能被市場理解和記住。" },
-  { brand:"文化項目", text:"他們對故事線和符號的敏感度很高，最後交付的不只是一個形象，而是一套可以延展的內容資產。" },
-  { brand:"餐飲品牌", text:"包裝、門店和社交視覺的連貫性很強，消費者第一眼就能感受到品牌調性被重新拉起來了。" },
-  { brand:"教育集團", text:"從調研到提案都很清晰，能把複雜的品牌問題轉化成簡潔、有辨識度的視覺答案。" },
-  { brand:"科技品牌", text:"燃點的市場洞察很準，他們知道年輕客群會被什麼吸引，也知道品牌不能只停留在流行表面。" },
-  { brand:"珠寶品牌", text:"高級感處理得很克制，沒有過度裝飾，但每個細節都讓品牌顯得更穩、更有價值。" },
-  { brand:"潮玩 IP", text:"角色設定、三視圖、場景延展都非常完整，讓我們更容易和產品、內容、聯名合作對接。" },
-  { brand:"運動品牌", text:"他們的視覺節奏很有力量，能把品牌精神轉化成一眼可感知的畫面和符號。" },
-  { brand:"食品品牌", text:"燃點對貨架競爭很敏感，包裝方案既有美感，也考慮到真正售賣時的識別效率。" },
-  { brand:"地產項目", text:"從品牌語氣到空間視覺，整體判斷很成熟，讓項目在展示階段就有更強的信任感。" },
-  { brand:"兒童品牌", text:"他們能平衡童趣和品牌質感，視覺親和但不幼稚，這一點很難得。" },
-  { brand:"跨界聯名", text:"燃點擅長找到品牌之間的共同語言，讓聯名不是拼貼，而是有理由、有記憶點的合作。" },
+  { avatar:"陳", name:"陳小姐", role:"品牌市場總監", brand:"零售集團", text:"第一次溝通就很快抓到我們想年輕化、但又不能太浮誇的那個點。最後不是單純變好看，而是整套視覺真的更容易被客人記住。" },
+  { avatar:"L", name:"Leo Wong", role:"項目策劃負責人", brand:"文化項目", text:"燃點對故事線很敏感，會追問很多細節。過程有點被逼著想清楚，但結果是好的，形象不空，有內容可以一直延展。" },
+  { avatar:"黃", name:"黃先生", role:"聯合創辦人", brand:"餐飲品牌", text:"包裝、門店、社交圖放在一起是順的。以前我們每個觸點都像不同人做的，現在終於像同一個品牌了。" },
+  { avatar:"S", name:"Sarah Lee", role:"品牌經理", brand:"教育集團", text:"提案邏輯很清楚，能把很散的需求收斂成一個方向。中間修改節奏如果再快一點會更好，但最終成品質感是超預期的。" },
+  { avatar:"林", name:"林先生", role:"產品負責人", brand:"科技品牌", text:"他們不是只談美感，會一直問用戶看到後的第一反應是什麼。這點讓我們覺得很安心，因為設計最後是要面對市場的。" },
+  { avatar:"M", name:"Maggie Chan", role:"營運總監", brand:"珠寶品牌", text:"高級感拿捏得很克制，沒有把東西做得很滿。細節變乾淨後，品牌反而更有價值感。" },
+  { avatar:"許", name:"許小姐", role:"IP 商務負責人", brand:"潮玩 IP", text:"角色設定、三視圖、表情延展都很完整，後面和產品、聯名、內容團隊對接時省了很多溝通成本。" },
+  { avatar:"K", name:"Ken Lau", role:"市場部主管", brand:"運動品牌", text:"視覺很有力量，尤其是主畫面的節奏感。不是那種套模板的酷，而是真的有品牌精神在裡面。" },
+  { avatar:"周", name:"周小姐", role:"電商負責人", brand:"食品品牌", text:"燃點很懂貨架和電商縮圖的競爭。方案漂亮是一回事，更重要是放到真實售賣場景裡也站得住。" },
+  { avatar:"T", name:"Tony Ng", role:"招商展示負責人", brand:"地產項目", text:"他們把項目的語氣做得更穩，展示材料也更有信任感。客戶看完之後，理解速度明顯快了。" },
+  { avatar:"梁", name:"梁小姐", role:"品牌主理人", brand:"兒童品牌", text:"童趣和質感很難平衡，燃點沒有把它做幼稚，這點我很喜歡。小朋友喜歡，大人也覺得舒服。" },
+  { avatar:"A", name:"Alice Ho", role:"聯名項目經理", brand:"跨界聯名", text:"他們會先找兩個品牌之間真正能成立的理由，再做視覺。這讓聯名不是硬拼在一起，而是有記憶點。" },
+];
+
+const TESTIMONIAL_GROUPS = [
+  TESTIMONIALS.slice(0, 3),
+  TESTIMONIALS.slice(3, 6),
+  TESTIMONIALS.slice(6, 9),
+  TESTIMONIALS.slice(9, 12),
 ];
 
 const Testimonials = () => (
@@ -236,13 +243,22 @@ const Testimonials = () => (
         <span>客戶評價  ·  CLIENT VOICES</span>
         <span className="line"/>
       </div>
-      <div className="quote-grid">
-        {TESTIMONIALS.map((q, i) => (
-          <article className="quote-card" key={i}>
-            <div className="q-mark">“</div>
-            <p>{q.text}</p>
-            <div className="q-brand">{q.brand}</div>
-          </article>
+      <div className="quote-rotator" aria-label="客戶評價輪播">
+        {TESTIMONIAL_GROUPS.map((group, groupIndex) => (
+          <div className="quote-set" key={groupIndex} style={{ animationDelay: `${groupIndex * 6}s` }}>
+            {group.map((q, i) => (
+              <article className="quote-card" key={`${q.name}-${i}`}>
+                <div className="quote-head">
+                  <div className="q-avatar">{q.avatar}</div>
+                  <div>
+                    <div className="q-name">{q.name}</div>
+                    <div className="q-role">{q.role} · {q.brand}</div>
+                  </div>
+                </div>
+                <p>{q.text}</p>
+              </article>
+            ))}
+          </div>
         ))}
       </div>
     </div>
