@@ -63,8 +63,14 @@ section:first-of-type{border-top:0}
 .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;padding-top:120px;padding-bottom:48px;overflow:hidden}
 .hero-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .hero-bg .sun{width:min(82vh,1100px);aspect-ratio:1/1;opacity:.86;animation:spin 90s linear infinite}
+.client-orbit{position:absolute;left:50%;top:50%;width:min(92vmin,1180px);height:min(92vmin,1180px);transform:translate(-50%,-50%);animation:orbitSpin 90s linear infinite;z-index:1;opacity:.9}
+.client-star{position:absolute;left:50%;top:50%;display:flex;align-items:center;gap:7px;transform:rotate(var(--a)) translateY(calc(-1 * var(--r))) rotate(90deg);transform-origin:0 0;white-space:nowrap;color:var(--paper);font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;text-shadow:0 0 18px color-mix(in srgb, var(--ink) 78%, transparent)}
+.client-star i{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent),0 0 18px color-mix(in srgb, var(--accent) 50%, transparent);animation:twinkle 2.8s ease-in-out infinite;animation-delay:var(--d)}
+.client-star b{font-weight:700;opacity:.82}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes orbitSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
 @keyframes spin-rev{to{transform:rotate(-360deg)}}
+@keyframes twinkle{0%,100%{transform:scale(.72);opacity:.45}45%{transform:scale(1.28);opacity:1}65%{transform:scale(.95);opacity:.72}}
 .hero-content{position:relative;z-index:2;text-align:center}
 .hero-mark{font-family:var(--font-display);font-weight:800;font-size:clamp(80px,16vw,260px);line-height:.9;letter-spacing:-.04em;display:inline-flex;align-items:baseline;gap:.04em}
 .hero-mark .ch{position:relative}
@@ -84,6 +90,11 @@ section:first-of-type{border-top:0}
 .hero-tags{position:absolute;top:96px;right:56px;text-align:right;font-size:11.5px;line-height:1.9;letter-spacing:.06em;color:var(--mute);z-index:2}
 .hero-tags b{color:var(--paper);font-weight:600}
 @media (max-width:880px){.hero-tags{display:none}}
+@media (max-width:760px){
+  .client-orbit{width:104vmin;height:104vmin;opacity:.55}
+  .client-star{font-size:8px;gap:5px}
+  .client-star i{width:4px;height:4px}
+}
 
 /* ===== About ===== */
 .about-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:80px}

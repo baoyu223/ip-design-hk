@@ -44,6 +44,34 @@ const Nav = ({ active, onNav, theme = "dark", onThemeToggle }) => (
 // ─────────────────────────────────────────────────────────────────────────────
 // HERO
 // ─────────────────────────────────────────────────────────────────────────────
+const HERO_CLIENTS = [
+  "秦始皇博物館", "華強集團", "卓越教育", "百佳超市", "湘小伍", "曲江樂雅",
+  "星際小螞蟻", "南方電網", "涉外教育", "老鄉雞", "TCL", "361°",
+  "愛英寶寶", "愛卡屋", "蘇菲珠寶", "阿里巴巴", "大象體育", "精武門",
+  "香港置地", "愛嬰島", "星火教育", "盼盼", "健力寶", "越勇體育",
+  "美宴餐飲", "漁婆婆", "BAGBOX", "金多多", "新時代文具", "PENGO",
+  "榮幸醫藥", "真彩文具", "POPO 麵包",
+];
+
+const HeroClientOrbit = () => (
+  <div className="client-orbit" aria-hidden="true">
+    {HERO_CLIENTS.map((name, i) => (
+      <span
+        key={name}
+        className="client-star"
+        style={{
+          "--a": `${(i * 360 / HERO_CLIENTS.length) + ((i % 4) * 1.7)}deg`,
+          "--r": `${34 + (i % 3) * 3}vmin`,
+          "--d": `${-(i % 9) * 0.32}s`,
+        }}
+      >
+        <i></i>
+        <b>{name}</b>
+      </span>
+    ))}
+  </div>
+);
+
 const Hero = ({ variant = "sunburst" }) => (
   <section id="home" className="hero" data-screen-label="01 Hero">
     {/* corner service tags echoing poster */}
@@ -56,6 +84,7 @@ const Hero = ({ variant = "sunburst" }) => (
     {variant === "sunburst" && (
       <div className="hero-bg">
         <Sunburst className="sun" color="var(--paper)" />
+        <HeroClientOrbit />
       </div>
     )}
     {variant === "minimal" && (
