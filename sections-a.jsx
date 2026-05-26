@@ -74,6 +74,25 @@ const HeroClientOrbit = () => (
   </div>
 );
 
+const HERO_IPS = [
+  { src: "assets/ip-orange.png", text: "嗨，品牌也可以有性格。" },
+  { src: "assets/ip-walker.png", text: "把角色變成可生長的資產。" },
+  { src: "assets/ip-skater.png", text: "IP 不是裝飾，是故事入口。" },
+  { src: "assets/ip-white-skater.png", text: "讓客戶記住你的品牌。" },
+];
+
+const HeroIPCharacters = () => (
+  <div className="hero-ip-layer" aria-hidden="true">
+    {HERO_IPS.map((ip, i) => (
+      <figure className={`ip-pop ip-pop-${i + 1}`} key={ip.src}>
+        <span className="ip-wave"></span>
+        <img src={ip.src} alt="" />
+        <figcaption>{ip.text}</figcaption>
+      </figure>
+    ))}
+  </div>
+);
+
 const Hero = ({ variant = "sunburst" }) => (
   <section id="home" className="hero" data-screen-label="01 Hero">
     {/* corner service tags echoing poster */}
@@ -88,6 +107,7 @@ const Hero = ({ variant = "sunburst" }) => (
         <Sunburst className="sun" color="var(--paper)" />
         <div className="tech-field"></div>
         <HeroClientOrbit />
+        <HeroIPCharacters />
       </div>
     )}
     {variant === "minimal" && (
