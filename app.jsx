@@ -22,6 +22,20 @@ function App() {
   const [cases, setCases] = React.useState([]);
   const [openCase, setOpenCase] = React.useState(null);
 
+  const openCaseDetail = (item, updateHash = true) => {
+    setOpenCase(item);
+    if (updateHash && item?._id) {
+      window.history.replaceState(null, "", `#case-${encodeURIComponent(item._id)}`);
+    }
+  };
+
+  const closeCaseDetail = () => {
+    setOpenCase(null);
+    if (window.location.hash.startsWith("#case-")) {
+      window.history.replaceState(null, "", "#cases");
+    }
+  };
+
   React.useEffect(() => {
     document.body.style.overflow = openCase ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -46,6 +60,25 @@ function App() {
     }, 120);
     return () => window.clearTimeout(timer);
   }, []);
+
+  React.useEffect(() => {
+    if (!cases.length) return;
+    const openFromHash = () => {
+      if (!window.location.hash.startsWith("#case-")) return;
+      const id = decodeURIComponent(window.location.hash.replace("#case-", ""));
+      const matched = cases.find(item => item._id === id);
+      if (matched) {
+        setOpenCase(matched);
+        window.setTimeout(() => {
+          const el = document.getElementById("cases");
+          if (el) el.scrollIntoView({ block: "start" });
+        }, 80);
+      }
+    };
+    openFromHash();
+    window.addEventListener("hashchange", openFromHash);
+    return () => window.removeEventListener("hashchange", openFromHash);
+  }, [cases]);
 
   // 从 Sanity 后台拉取作品案例数据
   // Project ID: 6fxw2dmo · Dataset: production
@@ -95,8 +128,12 @@ function App() {
 
   // smooth scroll on nav click
   const onNav = (id) => {
+    if (id !== "cases" && openCase) setOpenCase(null);
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior:"smooth", block:"start" });
+    if (el) {
+      window.history.replaceState(null, "", `#${id}`);
+      el.scrollIntoView({ behavior:"smooth", block:"start" });
+    }
   };
 
   // scroll-spy
@@ -129,7 +166,7 @@ function App() {
   return (
     <>
       <ShapeDefs />
-      <Nav active={active} onNav={onNav} />
+      <Nav active={active} onNav={onNav} theme={t.theme} onThemeToggle={() => setTweak("theme", t.theme === "light" ? "dark" : "light")} />
       <main>
         <Hero variant={t.heroVariant} />
         <Marquee />
@@ -137,8 +174,8 @@ function App() {
         <Services />
         <Methodology />
         <Clients />
-        <Cases cases={cases} onOpen={setOpenCase} />
-        {openCase && <CaseModal data={openCase} onClose={() => setOpenCase(null)} />}
+        <Cases cases={cases} onOpen={openCaseDetail} />
+        {openCase && <CaseModal data={openCase} onClose={closeCaseDetail} />}
         <Pricing onPick={setSelectedTier} />
         <Contact selectedTier={selectedTier} onTierChange={setSelectedTier} />
       </main>

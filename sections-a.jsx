@@ -14,7 +14,7 @@ const NAV = [
 // ─────────────────────────────────────────────────────────────────────────────
 // NAV
 // ─────────────────────────────────────────────────────────────────────────────
-const Nav = ({ active, onNav }) => (
+const Nav = ({ active, onNav, theme = "dark", onThemeToggle }) => (
   <header className="nav">
     <div className="nav-inner">
       <a className="nav-brand" href="#home" onClick={(e)=>{e.preventDefault();onNav("home")}}>
@@ -29,9 +29,14 @@ const Nav = ({ active, onNav }) => (
              onClick={(e)=>{e.preventDefault(); onNav(n.id)}}>{n.label}</a>
         ))}
       </nav>
-      <a className="nav-cta" href="#contact" onClick={(e)=>{e.preventDefault();onNav("contact")}}>
-        <span className="dot"></span>啟動項目
-      </a>
+      <div className="nav-actions">
+        <button className="theme-toggle" type="button" onClick={onThemeToggle} aria-label="切換黑白風格">
+          <span>{theme === "light" ? "白" : "黑"}</span>
+        </button>
+        <a className="nav-cta" href="#contact" onClick={(e)=>{e.preventDefault();onNav("contact")}}>
+          <span className="dot"></span>啟動項目
+        </a>
+      </div>
     </div>
   </header>
 );
@@ -365,6 +370,12 @@ const shareCase = (data, channel) => {
   if (navigator.clipboard) navigator.clipboard.writeText(url).catch(() => {});
   if (channel === "instagram") window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
 };
+const SHARE_OPTIONS = [
+  { id: "native", label: "朋友圈", icon: "朋" },
+  { id: "facebook", label: "Facebook", icon: "f" },
+  { id: "instagram", label: "Instagram", icon: "ig" },
+  { id: "x", label: "X", icon: "x" },
+];
 
 const Cases = ({ cases, onOpen }) => {
   // 来自 Sanity 后台的数据优先；空时使用 fallback 占位
@@ -471,10 +482,11 @@ const CaseModal = ({ data, onClose }) => {
               <div>
                 <b>SHARE</b>
                 <div className="case-share">
-                  <button type="button" onClick={() => shareCase(data, "native")}>朋友圈</button>
-                  <button type="button" onClick={() => shareCase(data, "facebook")}>Facebook</button>
-                  <button type="button" onClick={() => shareCase(data, "instagram")}>Instagram</button>
-                  <button type="button" onClick={() => shareCase(data, "x")}>X</button>
+                  {SHARE_OPTIONS.map(item => (
+                    <button key={item.id} type="button" onClick={() => shareCase(data, item.id)} aria-label={`分享至 ${item.label}`} title={item.label}>
+                      {item.icon}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
