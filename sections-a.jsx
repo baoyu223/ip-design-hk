@@ -144,13 +144,20 @@ const Hero = ({ variant = "sunburst" }) => (
 // MARQUEE
 // ─────────────────────────────────────────────────────────────────────────────
 const Marquee = () => {
-  const items = ["品牌基因解碼", "潮玩 3D 視覺重塑", "全場景視覺延展", "商業化變現引爆", "Z 世代對話", "盲盒級資產"];
+  const items = [
+    ["品牌基因解碼", "Brand genome decoding"],
+    ["潮玩 3D 視覺重塑", "Trend-toy visual sculpting"],
+    ["全場景視覺延展", "Full-scene visual extension"],
+    ["商業化變現引爆", "Commercial ignition"],
+    ["Z 世代對話", "Gen Z conversation"],
+    ["盲盒級資產", "Collectible-grade assets"],
+  ];
   return (
     <div className="marquee">
       <div className="marquee-track">
         {[...items, ...items, ...items].map((t,i) => (
           <React.Fragment key={i}>
-            <span>{t}</span>
+            <span><b>{t[0]}</b><em>{t[1]}</em></span>
             <span className="sp">✦</span>
           </React.Fragment>
         ))}
@@ -201,6 +208,42 @@ const About = () => (
             <div className="k">AWARDS · 獎項</div>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+);
+
+const TESTIMONIALS = [
+  { brand:"零售集團", text:"燃點能很快抓住品牌年輕化的核心，不只是改好看，而是讓整套視覺能被市場理解和記住。" },
+  { brand:"文化項目", text:"他們對故事線和符號的敏感度很高，最後交付的不只是一個形象，而是一套可以延展的內容資產。" },
+  { brand:"餐飲品牌", text:"包裝、門店和社交視覺的連貫性很強，消費者第一眼就能感受到品牌調性被重新拉起來了。" },
+  { brand:"教育集團", text:"從調研到提案都很清晰，能把複雜的品牌問題轉化成簡潔、有辨識度的視覺答案。" },
+  { brand:"科技品牌", text:"燃點的市場洞察很準，他們知道年輕客群會被什麼吸引，也知道品牌不能只停留在流行表面。" },
+  { brand:"珠寶品牌", text:"高級感處理得很克制，沒有過度裝飾，但每個細節都讓品牌顯得更穩、更有價值。" },
+  { brand:"潮玩 IP", text:"角色設定、三視圖、場景延展都非常完整，讓我們更容易和產品、內容、聯名合作對接。" },
+  { brand:"運動品牌", text:"他們的視覺節奏很有力量，能把品牌精神轉化成一眼可感知的畫面和符號。" },
+  { brand:"食品品牌", text:"燃點對貨架競爭很敏感，包裝方案既有美感，也考慮到真正售賣時的識別效率。" },
+  { brand:"地產項目", text:"從品牌語氣到空間視覺，整體判斷很成熟，讓項目在展示階段就有更強的信任感。" },
+  { brand:"兒童品牌", text:"他們能平衡童趣和品牌質感，視覺親和但不幼稚，這一點很難得。" },
+  { brand:"跨界聯名", text:"燃點擅長找到品牌之間的共同語言，讓聯名不是拼貼，而是有理由、有記憶點的合作。" },
+];
+
+const Testimonials = () => (
+  <section id="testimonials" className="testimonials" data-screen-label="02B Testimonials">
+    <div className="shell">
+      <div className="sec-eyebrow">
+        <span className="num">VOICE</span>
+        <span>客戶評價  ·  CLIENT VOICES</span>
+        <span className="line"/>
+      </div>
+      <div className="quote-grid">
+        {TESTIMONIALS.map((q, i) => (
+          <article className="quote-card" key={i}>
+            <div className="q-mark">“</div>
+            <p>{q.text}</p>
+            <div className="q-brand">{q.brand}</div>
+          </article>
+        ))}
       </div>
     </div>
   </section>
@@ -594,4 +637,4 @@ const CaseModal = ({ data, onClose }) => {
   );
 };
 
-Object.assign(window, { Nav, Hero, Marquee, About, Services, Methodology, Cases, CaseModal, NAV });
+Object.assign(window, { Nav, Hero, Marquee, About, Testimonials, Services, Methodology, Cases, CaseModal, NAV });

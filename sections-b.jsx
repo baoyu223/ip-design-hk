@@ -96,6 +96,27 @@ const Pricing = ({ onPick }) => (
 const Contact = ({ selectedTier, onTierChange }) => {
   const [submitted, setSubmitted] = React.useState(false);
   const tiers = ["輕量啟動", "全案資產", "戰略陪跑", "待議"];
+  const onSubmit = (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const data = new FormData(form);
+    const subject = `品牌 IP 初步諮詢｜${data.get("brand") || ""}`;
+    const body = [
+      "你好，燃點品牌設計：",
+      "",
+      "我想開啟品牌 IP / 視覺資產項目，以下是初步資料：",
+      "",
+      `稱呼：${data.get("name") || ""}`,
+      `品牌：${data.get("brand") || ""}`,
+      `聯絡方式：${data.get("contact") || ""}`,
+      `意向階梯：${selectedTier || "未選擇"}`,
+      "",
+      "項目簡述：",
+      data.get("brief") || "",
+    ].join("\n");
+    window.location.href = `mailto:hello@ip-design.hk,baoguangwen7708@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    setSubmitted(true);
+  };
   return (
     <section id="contact" data-screen-label="07 Contact">
       <div className="shell">
@@ -152,18 +173,18 @@ const Contact = ({ selectedTier, onTierChange }) => {
                 </p>
               </div>
             ) : (
-              <form className="form" onSubmit={(e)=>{e.preventDefault(); setSubmitted(true)}}>
+              <form className="form" onSubmit={onSubmit}>
                 <div className="field">
                   <label>1 · 你的稱呼 / NAME</label>
-                  <input placeholder="例如：林先生 / Ms. Chan" required />
+                  <input name="name" placeholder="例如：林先生 / Ms. Chan" required />
                 </div>
                 <div className="field">
                   <label>2 · 品牌 / BRAND</label>
-                  <input placeholder="你的品牌名稱、行業或產品方向" required />
+                  <input name="brand" placeholder="你的品牌名稱、行業或產品方向" required />
                 </div>
                 <div className="field">
                   <label>3 · 聯絡方式 / CONTACT</label>
-                  <input placeholder="Email / WeChat / WhatsApp" required />
+                  <input name="contact" placeholder="Email / WeChat / WhatsApp" required />
                 </div>
                 <div className="field">
                   <label>4 · 意向階梯 / TIER</label>
@@ -175,7 +196,7 @@ const Contact = ({ selectedTier, onTierChange }) => {
                 </div>
                 <div className="field">
                   <label>5 · 項目簡述 / BRIEF</label>
-                  <textarea placeholder="簡單說說你的品牌背景、想解決的問題、希望達成的效果" rows={3} required />
+                  <textarea name="brief" placeholder="簡單說說你的品牌背景、想解決的問題、希望達成的效果" rows={3} required />
                 </div>
                 <button type="submit" className="submit">
                   馬上開啟你的品牌 IP <span className="arr">→</span>

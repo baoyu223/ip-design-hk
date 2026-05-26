@@ -171,6 +171,7 @@ function App() {
         <Hero variant={t.heroVariant} />
         <Marquee />
         <About />
+        <Testimonials />
         <Services />
         <Methodology />
         <Cases cases={cases} onOpen={openCaseDetail} />
