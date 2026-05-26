@@ -68,14 +68,22 @@ section:first-of-type{border-top:0}
 .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;padding-top:120px;padding-bottom:48px;overflow:hidden}
 .hero-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .hero-bg .sun{width:min(82vh,1100px);aspect-ratio:1/1;opacity:.86;animation:spin 90s linear infinite}
+.tech-field{position:absolute;width:min(96vmin,1240px);height:min(96vmin,1240px);border-radius:50%;background:
+  radial-gradient(circle at 50% 50%, transparent 0 34%, color-mix(in srgb, var(--paper) 10%, transparent) 34.2% 34.6%, transparent 34.8% 100%),
+  radial-gradient(circle at 50% 50%, transparent 0 52%, color-mix(in srgb, var(--paper) 8%, transparent) 52.2% 52.6%, transparent 52.8% 100%),
+  repeating-conic-gradient(from 12deg, color-mix(in srgb, var(--paper) 12%, transparent) 0deg 1deg, transparent 1deg 8deg);
+  mask-image:radial-gradient(circle, transparent 0 22%, #000 30% 72%, transparent 82%);
+  opacity:.26;animation:techDrift 24s linear infinite;z-index:0}
 .client-orbit{position:absolute;left:50%;top:50%;width:min(92vmin,1180px);height:min(92vmin,1180px);transform:translate(-50%,-50%);animation:orbitSpin 90s linear infinite;z-index:1;opacity:.9}
 .client-star{position:absolute;left:50%;top:50%;display:flex;align-items:center;gap:7px;transform:rotate(var(--a)) translateY(calc(-1 * var(--r))) rotate(90deg);transform-origin:0 0;white-space:nowrap;color:var(--paper);font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;text-shadow:0 0 18px color-mix(in srgb, var(--ink) 78%, transparent)}
 .client-star i{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent),0 0 18px color-mix(in srgb, var(--accent) 50%, transparent);animation:twinkle 2.8s ease-in-out infinite;animation-delay:var(--d)}
-.client-star b{font-weight:700;opacity:.82}
+.client-star b{font-weight:700;opacity:.82;display:inline-block;animation:brandBreath 4.8s ease-in-out infinite;animation-delay:var(--d);transform-origin:left center}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes orbitSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
 @keyframes spin-rev{to{transform:rotate(-360deg)}}
 @keyframes twinkle{0%,100%{transform:scale(.72);opacity:.45}45%{transform:scale(1.28);opacity:1}65%{transform:scale(.95);opacity:.72}}
+@keyframes brandBreath{0%,100%{transform:scale(.88);opacity:.55}45%{transform:scale(1.14);opacity:.98}70%{transform:scale(1);opacity:.72}}
+@keyframes techDrift{to{transform:rotate(-360deg) scale(1.04)}}
 .hero-content{position:relative;z-index:2;text-align:center}
 .hero-mark{font-family:var(--font-display);font-weight:800;font-size:clamp(80px,16vw,260px);line-height:.9;letter-spacing:-.04em;display:inline-flex;align-items:baseline;gap:.04em}
 .hero-mark-image{align-items:center;gap:18px}

@@ -19,8 +19,8 @@ const Nav = ({ active, onNav, theme = "dark", onThemeToggle }) => (
     <div className="nav-inner">
       <a className="nav-brand" href="#home" onClick={(e)=>{e.preventDefault();onNav("home")}}>
         <span className="nav-logo-wrap">
-          <img className="nav-logo nav-logo-light" src="assets/brand-logo-white.png" alt="燃點" />
-          <img className="nav-logo nav-logo-dark" src="assets/brand-logo-black.png" alt="燃點" />
+          <img className="nav-logo nav-logo-light" src="assets/brand-logo-white-alpha.png" alt="燃點" />
+          <img className="nav-logo nav-logo-dark" src="assets/brand-logo-black-alpha.png" alt="燃點" />
         </span>
         <span>IBD</span>
         <span style={{ opacity:.55, marginLeft:6 }}>燃點品牌設計</span>
@@ -86,6 +86,7 @@ const Hero = ({ variant = "sunburst" }) => (
     {variant === "sunburst" && (
       <div className="hero-bg">
         <Sunburst className="sun" color="var(--paper)" />
+        <div className="tech-field"></div>
         <HeroClientOrbit />
       </div>
     )}
@@ -106,8 +107,8 @@ const Hero = ({ variant = "sunburst" }) => (
     <div className="shell" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 56px" }}>
       <div className="hero-content">
         <div className="hero-mark hero-mark-image">
-          <img className="hero-wordmark hero-wordmark-black" src="assets/brand-wordmark-black.png" alt="燃點" />
-          <img className="hero-wordmark hero-wordmark-white" src="assets/brand-wordmark-white.png" alt="燃點" />
+          <img className="hero-wordmark hero-wordmark-black" src="assets/brand-wordmark-black-alpha.png" alt="燃點" />
+          <img className="hero-wordmark hero-wordmark-white" src="assets/brand-wordmark-white-alpha.png" alt="燃點" />
           <Sparkle size={64} color="var(--accent)" className="sparkle" />
         </div>
         <div className="hero-sub-en">IGNITION&nbsp;&nbsp;BRAND&nbsp;&nbsp;DESIGN</div>
