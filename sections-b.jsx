@@ -95,27 +95,42 @@ const Pricing = ({ onPick }) => (
 // ─────────────────────────────────────────────────────────────────────────────
 const Contact = ({ selectedTier, onTierChange }) => {
   const [submitted, setSubmitted] = React.useState(false);
+  const [submitState, setSubmitState] = React.useState("idle");
   const tiers = ["輕量啟動", "全案資產", "戰略陪跑", "待議"];
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     const form = e.currentTarget;
     const data = new FormData(form);
     const subject = `品牌 IP 初步諮詢｜${data.get("brand") || ""}`;
-    const body = [
-      "你好，燃點品牌設計：",
-      "",
-      "我想開啟品牌 IP / 視覺資產項目，以下是初步資料：",
-      "",
-      `稱呼：${data.get("name") || ""}`,
-      `品牌：${data.get("brand") || ""}`,
-      `聯絡方式：${data.get("contact") || ""}`,
-      `意向階梯：${selectedTier || "未選擇"}`,
-      "",
-      "項目簡述：",
-      data.get("brief") || "",
-    ].join("\n");
-    window.location.href = `mailto:hello@ip-design.hk,baoguangwen7708@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setSubmitted(true);
+    const payload = {
+      _subject: subject,
+      _cc: "hello@ip-design.hk",
+      _template: "table",
+      _captcha: "false",
+      name: data.get("name") || "",
+      brand: data.get("brand") || "",
+      contact: data.get("contact") || "",
+      tier: selectedTier || "未選擇",
+      brief: data.get("brief") || "",
+    };
+
+    setSubmitState("sending");
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/baoguangwen7708@gmail.com", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error("submit failed");
+      setSubmitted(true);
+      form.reset();
+      setSubmitState("idle");
+    } catch (error) {
+      setSubmitState("error");
+    }
   };
   return (
     <section id="contact" data-screen-label="07 Contact">
@@ -198,9 +213,12 @@ const Contact = ({ selectedTier, onTierChange }) => {
                   <label>5 · 項目簡述 / BRIEF</label>
                   <textarea name="brief" placeholder="簡單說說你的品牌背景、想解決的問題、希望達成的效果" rows={3} required />
                 </div>
-                <button type="submit" className="submit">
-                  馬上開啟你的品牌 IP <span className="arr">→</span>
+                <button type="submit" className="submit" disabled={submitState === "sending"}>
+                  {submitState === "sending" ? "正在提交..." : "馬上開啟你的品牌 IP"} <span className="arr">→</span>
                 </button>
+                {submitState === "error" && (
+                  <p className="form-error">提交暫時未成功，請稍後再試，或直接 WhatsApp 我們：+852 6948 6199。</p>
+                )}
               </form>
             )}
           </div>
