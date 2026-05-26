@@ -228,13 +228,6 @@ const TESTIMONIALS = [
   { avatar:"A", name:"Alice Ho", role:"聯名項目經理", brand:"跨界聯名", text:"他們會先找兩個品牌之間真正能成立的理由，再做視覺。這讓聯名不是硬拼在一起，而是有記憶點。" },
 ];
 
-const TESTIMONIAL_GROUPS = [
-  TESTIMONIALS.slice(0, 3),
-  TESTIMONIALS.slice(3, 6),
-  TESTIMONIALS.slice(6, 9),
-  TESTIMONIALS.slice(9, 12),
-];
-
 const Testimonials = () => (
   <section id="testimonials" className="testimonials" data-screen-label="02B Testimonials">
     <div className="shell">
@@ -244,22 +237,20 @@ const Testimonials = () => (
         <span className="line"/>
       </div>
       <div className="quote-rotator" aria-label="客戶評價輪播">
-        {TESTIMONIAL_GROUPS.map((group, groupIndex) => (
-          <div className="quote-set" key={groupIndex} style={{ animationDelay: `${groupIndex * 6}s` }}>
-            {group.map((q, i) => (
-              <article className="quote-card" key={`${q.name}-${i}`}>
-                <div className="quote-head">
-                  <div className="q-avatar">{q.avatar}</div>
-                  <div>
-                    <div className="q-name">{q.name}</div>
-                    <div className="q-role">{q.role} · {q.brand}</div>
-                  </div>
+        <div className="quote-track">
+          {[...TESTIMONIALS, ...TESTIMONIALS].map((q, i) => (
+            <article className="quote-card" key={`${q.name}-${i}`}>
+              <div className="quote-head">
+                <div className="q-avatar">{q.avatar}</div>
+                <div>
+                  <div className="q-name">{q.name}</div>
+                  <div className="q-role">{q.role} · {q.brand}</div>
                 </div>
-                <p>{q.text}</p>
-              </article>
-            ))}
-          </div>
-        ))}
+              </div>
+              <p>{q.text}</p>
+            </article>
+          ))}
+        </div>
       </div>
     </div>
   </section>
