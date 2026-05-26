@@ -352,8 +352,22 @@ const shareCase = (data, channel) => {
   const text = getCaseDescription(data);
   const url = getCaseShareUrl(data);
 
-  if (channel === "native" && navigator.share) {
-    navigator.share({ title, text, url }).catch(() => {});
+  if (channel === "wechat") {
+    const done = () => window.alert("案例链接已复制，可粘贴到微信聊天或朋友圈。");
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(done).catch(() => window.prompt("复制这个案例链接到微信：", url));
+    } else {
+      window.prompt("复制这个案例链接到微信：", url);
+    }
+    return;
+  }
+
+  if (channel === "native") {
+    if (navigator.share) {
+      navigator.share({ title, text, url }).catch(() => {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => window.alert("案例链接已复制。"));
+    }
     return;
   }
 
@@ -371,7 +385,8 @@ const shareCase = (data, channel) => {
   if (channel === "instagram") window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
 };
 const SHARE_OPTIONS = [
-  { id: "native", label: "朋友圈", icon: "朋" },
+  { id: "wechat", label: "微信 / 朋友圈", icon: "微" },
+  { id: "native", label: "系统分享", icon: "↗" },
   { id: "facebook", label: "Facebook", icon: "f" },
   { id: "instagram", label: "Instagram", icon: "ig" },
   { id: "x", label: "X", icon: "x" },
