@@ -32,12 +32,12 @@ const Nav = ({ active, onNav, theme = "dark", onThemeToggle }) => (
         ))}
       </nav>
       <div className="nav-actions">
-        <button className="theme-toggle" type="button" onClick={onThemeToggle} aria-label="切換黑白風格">
-          <span>{theme === "light" ? "白" : "黑"}</span>
-        </button>
         <a className="nav-cta" href="#contact" onClick={(e)=>{e.preventDefault();onNav("contact")}}>
           <span className="dot"></span>啟動項目
         </a>
+        <button className="theme-toggle" type="button" onClick={onThemeToggle} aria-label="切換黑白風格">
+          <span>{theme === "light" ? "白" : "黑"}</span>
+        </button>
       </div>
     </div>
   </header>

@@ -59,7 +59,10 @@ body.light .nav-logo-dark{display:block}
   .nav-links a{flex:0 0 auto;padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:11px;background:color-mix(in srgb, var(--paper) 4%, transparent)}
   .nav-links a.active::after{display:none}
   .nav-brand span:last-child{display:none}
-  .nav-cta{display:none}
+  .nav-actions{gap:8px}
+  .nav-cta{display:inline-flex;padding:8px 10px;font-size:11px;letter-spacing:.04em;white-space:nowrap;background:var(--accent);color:var(--ink);border-color:var(--accent)}
+  .nav-cta .dot{display:none}
+  .theme-toggle{width:34px;height:34px}
 }
 
 /* ===== Section base ===== */
