@@ -15,7 +15,9 @@ export default {
       description: "建議 MP4，文件不要太大；首頁與案例詳情都會按原視頻比例顯示。",
       options: { accept: "video/mp4,video/quicktime,video/webm" },
       components: { input: VideoFileInput },
-      validation: (R) => R.required(),
+      validation: (R) => R.custom((value) => (
+        value?.asset?._ref ? true : "建議上傳視頻文件；沒有視頻文件時，前台不會展示這條視頻。"
+      )).warning(),
     },
     {
       name: "poster",
