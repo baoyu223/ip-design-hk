@@ -18,6 +18,13 @@ export default {
       validation: (R) => R.required(),
     },
     {
+      name: "poster",
+      title: "視頻封面圖",
+      type: "image",
+      description: "建議上傳 1:1 正方形封面；首頁、客戶評價與案例詳情會統一以正方形封面展示。",
+      options: { hotspot: true },
+    },
+    {
       name: "showOnHome",
       title: "放到首頁視頻板塊",
       type: "boolean",
@@ -53,8 +60,9 @@ export default {
       showOnHome: "showOnHome",
       showInTestimonials: "showInTestimonials",
       caseTitle: "relatedCase.title",
+      media: "poster",
     },
-    prepare({ title, subtitle, showOnHome, showInTestimonials, caseTitle }) {
+    prepare({ title, subtitle, showOnHome, showInTestimonials, caseTitle, media }) {
       const places = [
         showOnHome ? "首頁" : null,
         showInTestimonials ? "客戶評價" : null,
@@ -63,6 +71,7 @@ export default {
       return {
         title: title || "視頻",
         subtitle: `${places || "未指定展示位置"}${subtitle ? ` · ${subtitle}` : ""}`,
+        media,
       };
     },
   },
