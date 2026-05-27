@@ -103,6 +103,34 @@ const HeroIPScene = () => (
   </div>
 );
 
+const HERO_BARRAGE = [
+  "文旅項目想做城市 IP，就找燃點",
+  "潮玩角色規劃與商業化，一起從策略開始",
+  "把產品塑造成可被記住的品牌 IP",
+  "文創產品 IP，不只可愛，更要能賣",
+  "燃點 IP 品牌策劃設計，沉澱多年實戰經驗",
+  "IP 形象、包裝、視頻、授權，一條龍打通",
+  "我們不只設計 IP，也協助 IP 被銷售與授權",
+  "從 IP 設計到商業轉化，燃點一起把路走通",
+  "讓角色不只好看，也能被購買、被合作、被授權",
+  "食品包裝想做角色化，先找到品牌性格",
+  "兒童服裝、文具、玩具，都可以有自己的 IP 世界",
+  "從角色設定到產品延展，讓品牌有長期資產",
+  "想做聯名、授權、快閃，先把 IP 系統搭好",
+  "不是做一個圖案，是建立一個能被喜歡的角色",
+  "品牌需要記憶點，IP 是最有溫度的入口",
+];
+
+const HeroBarrage = () => (
+  <div className="hero-barrage" aria-label="燃點IP品牌策劃能力">
+    <div className="hero-barrage-track">
+      {[...HERO_BARRAGE, ...HERO_BARRAGE].map((text, index) => (
+        <span key={`${text}-${index}`}>{text}</span>
+      ))}
+    </div>
+  </div>
+);
+
 const Hero = ({ variant = "sunburst" }) => (
   <section id="home" className="hero" data-screen-label="01 Hero">
     {/* corner service tags echoing poster */}
@@ -136,6 +164,7 @@ const Hero = ({ variant = "sunburst" }) => (
 
     <div className="shell" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 56px" }}>
       <div className="hero-content">
+        <HeroBarrage />
         <div className="hero-mark hero-mark-image">
           <img className="hero-wordmark hero-wordmark-black" src="assets/brand-wordmark-black-alpha.png" alt="燃點" />
           <img className="hero-wordmark hero-wordmark-white" src="assets/brand-wordmark-white-alpha.png" alt="燃點" />
@@ -1116,13 +1145,7 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase }
       <div className="video-reel-track" ref={reelRef}>
         {list.map((video, index) => (
           <section className="video-reel-slide" key={`${video.url}-${index}`} data-video-index={index}>
-            <video
-              src={getVideoPreviewSrc(video.url)}
-              poster={video.poster || ""}
-              controls
-              playsInline
-              preload={Math.abs(index - initialIndex) <= 1 ? "auto" : "metadata"}
-            />
+            <video src={getVideoPreviewSrc(video.url)} poster={video.poster || ""} controls playsInline preload={Math.abs(index - initialIndex) <= 1 ? "metadata" : "none"} />
             <VideoBarrage video={video} />
             <div className="video-reel-caption">
               <div className="video-reel-meta">
