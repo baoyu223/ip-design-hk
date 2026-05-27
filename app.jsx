@@ -64,11 +64,30 @@ function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [openCase]);
 
+  const expandVideoGroup = (video = {}) => {
+    if (!video) return [];
+    const parent = { ...video, seriesTitle: video.seriesTitle || video.title, seriesIndex: 0 };
+    const series = Array.isArray(video.seriesVideos) ? video.seriesVideos : [];
+    return [
+      parent,
+      ...series.map((item, index) => ({
+        ...video,
+        ...item,
+        _id: `${video._id || video.url || "video"}-series-${index + 1}`,
+        title: item.title || video.title,
+        caption: item.caption || video.caption,
+        displayOrder: (Number(video.displayOrder) || 10) + ((index + 1) / 100),
+        seriesTitle: video.title,
+        seriesIndex: index + 1,
+      })),
+    ].filter(item => item && item.url);
+  };
+
   const allPlayableVideos = React.useMemo(() => {
     const fromCases = (cases || []).flatMap(item => (
       (item.videos || [])
         .filter(video => video && video.url)
-        .map(video => ({
+        .flatMap(video => expandVideoGroup({
           ...video,
           caseTitle: item.title,
           caseDescription: item.description,
@@ -78,7 +97,7 @@ function App() {
     ));
     const fromSite = (siteVideos || [])
       .filter(video => video && video.url)
-      .map(video => ({
+      .flatMap(video => expandVideoGroup({
         ...video,
         caseTitle: video.caseTitle,
         caseDescription: video.caseDescription,
@@ -182,7 +201,6 @@ function App() {
         title,
         caption,
         showOnHome,
-        showInTestimonials,
         displayOrder,
         "caseId": relatedCase->_id,
         "caseTitle": relatedCase->title,
@@ -224,28 +242,9 @@ function App() {
         const result = data?.result || {};
         const caseList = Array.isArray(result.cases) ? result.cases : [];
         const rawVideos = Array.isArray(result.siteVideos) ? result.siteVideos : [];
-        const videoList = rawVideos.flatMap((video) => {
-          if (!video) return [];
-          const parent = {
-            ...video,
-            seriesTitle: video.title,
-            seriesIndex: 0,
-          };
-          const series = Array.isArray(video.seriesVideos) ? video.seriesVideos : [];
-          return [
-            parent,
-            ...series.map((item, index) => ({
-              ...video,
-              ...item,
-              _id: `${video._id || "siteVideo"}-series-${index + 1}`,
-              title: item.title || video.title,
-              caption: item.caption || video.caption,
-              displayOrder: (Number(video.displayOrder) || 10) + ((index + 1) / 100),
-              seriesTitle: video.title,
-              seriesIndex: index + 1,
-            })),
-          ].filter(item => item && item.url);
-        });
+        const videoList = rawVideos
+          .filter(video => video && video.url)
+          .map(video => ({ ...video, seriesTitle: video.title, seriesIndex: 0 }));
         setSiteVideos(videoList);
         if (caseList.length > 0) {
           const casesWithVideos = caseList.map(item => ({
@@ -254,7 +253,7 @@ function App() {
               ...(item.videos || []),
               ...videoList
                 .filter(video => video.caseId === item._id)
-                .map(video => ({ ...video, placement: video.showInTestimonials ? "testimonial" : "caseOnly" })),
+                .map(video => ({ ...video, placement: "caseOnly" })),
             ],
           }));
           setCases(casesWithVideos);

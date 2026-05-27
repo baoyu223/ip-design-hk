@@ -416,9 +416,8 @@ const VideoThumb = ({ video, label = "播放視頻" }) => (
 const VideoSpotlight = ({ cases = [], siteVideos = [], onOpenVideo, onOpenCase }) => {
   const allVideos = collectCaseVideos(cases);
   const pickedVideos = [
-    ...(siteVideos || []).filter(video => video && video.url && (video.showOnHome || video.showInTestimonials)),
+    ...(siteVideos || []).filter(video => video && video.url && video.showOnHome),
     ...getVideosByPlacement(cases, "home"),
-    ...getVideosByPlacement(cases, "testimonial"),
   ].sort((a, b) => (Number(a.displayOrder) || 999) - (Number(b.displayOrder) || 999));
   const seen = new Map();
   (pickedVideos.length ? pickedVideos : allVideos.slice(0, 6)).forEach(video => {
@@ -1078,6 +1077,7 @@ const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate }) 
 
 const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase }) => {
   const reelRef = React.useRef(null);
+  const touchRef = React.useRef(null);
   const list = videos.filter(video => video && video.url);
 
   React.useEffect(() => {
@@ -1143,10 +1143,28 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase }
 
   if (!list.length) return null;
 
+  const onTouchStart = (event) => {
+    const touch = event.touches && event.touches[0];
+    if (!touch) return;
+    touchRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const onTouchEnd = (event) => {
+    if (!touchRef.current) return;
+    const touch = event.changedTouches && event.changedTouches[0];
+    if (!touch) return;
+    const dx = touch.clientX - touchRef.current.x;
+    const dy = touch.clientY - touchRef.current.y;
+    touchRef.current = null;
+    if (dx > 82 && Math.abs(dx) > Math.abs(dy) * 1.35) {
+      onClose && onClose();
+    }
+  };
+
   return (
     <div className="video-reel" role="dialog" aria-modal="true" aria-label="作品視頻合集">
       <button className="video-reel-close" type="button" onClick={onClose} aria-label="關閉視頻">×</button>
-      <div className="video-reel-track" ref={reelRef}>
+      <div className="video-reel-track" ref={reelRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         {list.map((video, index) => (
           <section className="video-reel-slide" key={`${video.url}-${index}`} data-video-index={index}>
             <video src={getVideoPreviewSrc(video.url)} poster={video.poster || ""} controls playsInline preload={Math.abs(index - initialIndex) <= 1 ? "metadata" : "none"} />
@@ -1160,9 +1178,13 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase }
               {(video.caption || video.caseDescription || video.category) && (
                 <p>{video.caption || video.caseDescription || video.category}</p>
               )}
+              <div className="video-license-hint" aria-label="IP 授權合作提示">
+                <span>IP 授權</span>
+                <em>可聯名 · 可開發周邊 · 可品類授權</em>
+              </div>
               {(video.caseTitle || video.caseId) && (
                 <button type="button" onClick={() => onOpenCase && onOpenCase(video)}>
-                  查看對應案例 · {video.caseTitle || "作品詳情"}
+                  查看案例與授權諮詢 · {video.caseTitle || "作品詳情"}
                 </button>
               )}
             </div>

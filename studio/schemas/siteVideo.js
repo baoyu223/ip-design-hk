@@ -23,7 +23,7 @@ export default {
       name: "poster",
       title: "視頻封面圖",
       type: "image",
-      description: "建議上傳 1:1 正方形封面；首頁、客戶評價與案例詳情會統一以正方形封面展示。",
+      description: "建議上傳 1:1 正方形封面；首頁與案例詳情會統一以正方形封面展示。",
       options: { hotspot: true },
     },
     {
@@ -73,17 +73,18 @@ export default {
     },
     {
       name: "showOnHome",
-      title: "放到首頁視頻板塊",
+      title: "在首頁展示這條主視頻",
       type: "boolean",
-      description: "只想指定一條首頁主視頻時，把那條打開即可。",
+      description: "打開後，首頁只展示這條主視頻卡片；系列視頻會在點開後連續播放，不會全部攤在首頁。",
       initialValue: false,
     },
     {
       name: "showInTestimonials",
-      title: "放到客戶評價下方作品視頻",
+      title: "舊欄位：客戶評價視頻",
       type: "boolean",
-      description: "可以打開多條，前台會橫向展示多個作品視頻。",
+      description: "已停用。保留只是為了避免舊資料出現 Unknown field。",
       initialValue: false,
+      hidden: true,
     },
     {
       name: "relatedCase",
@@ -105,14 +106,12 @@ export default {
       title: "title",
       subtitle: "caption",
       showOnHome: "showOnHome",
-      showInTestimonials: "showInTestimonials",
       caseTitle: "relatedCase.title",
       media: "poster",
     },
-    prepare({ title, subtitle, showOnHome, showInTestimonials, caseTitle, media }) {
+    prepare({ title, subtitle, showOnHome, caseTitle, media }) {
       const places = [
-        showOnHome ? "首頁" : null,
-        showInTestimonials ? "客戶評價" : null,
+        showOnHome ? "首頁主視頻" : null,
         caseTitle ? `案例：${caseTitle}` : null,
       ].filter(Boolean).join(" · ");
       return {
