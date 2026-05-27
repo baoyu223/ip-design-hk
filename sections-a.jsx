@@ -1116,7 +1116,13 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase }
       <div className="video-reel-track" ref={reelRef}>
         {list.map((video, index) => (
           <section className="video-reel-slide" key={`${video.url}-${index}`} data-video-index={index}>
-            <video src={getVideoPreviewSrc(video.url)} poster={video.poster || ""} controls playsInline preload={Math.abs(index - initialIndex) <= 1 ? "metadata" : "none"} />
+            <video
+              src={getVideoPreviewSrc(video.url)}
+              poster={video.poster || ""}
+              controls
+              playsInline
+              preload={Math.abs(index - initialIndex) <= 1 ? "auto" : "metadata"}
+            />
             <VideoBarrage video={video} />
             <div className="video-reel-caption">
               <div className="video-reel-meta">

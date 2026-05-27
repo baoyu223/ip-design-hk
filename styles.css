@@ -539,7 +539,7 @@ body.light .m-vis{background:var(--ink-2)}
 .video-reel-track{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}
 .video-reel-track::-webkit-scrollbar{display:none}
 .video-reel-slide{height:100svh;scroll-snap-align:start;display:grid;place-items:center;position:relative;padding:56px 18px 110px}
-.video-reel-slide video{max-width:min(980px,100%);max-height:calc(100svh - 190px);width:auto;height:auto;background:#000;border-radius:8px}
+.video-reel-slide video{position:relative;z-index:2;max-width:min(980px,100%);max-height:calc(100svh - 190px);width:auto;height:auto;background:#000;border-radius:8px;filter:brightness(1.08) contrast(1.04) saturate(1.04)}
 .video-reel-caption{position:absolute;left:24px;right:24px;bottom:24px;display:grid;gap:8px;padding:14px 16px;border:1px solid rgba(255,255,255,.14);border-radius:14px;background:rgba(0,0,0,.42);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .video-reel-meta{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .video-reel-meta .video-heat{position:static;display:flex;gap:10px;padding:7px 9px}
