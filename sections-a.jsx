@@ -396,29 +396,65 @@ const VideoBarrage = ({ video, compact = false }) => (
   </span>
 );
 
-const VideoThumb = ({ video, label = "播放視頻" }) => (
-  <div className="video-thumb" aria-label={label}>
-    {video.poster ? (
-      <img src={video.poster} alt={video.title || video.caseTitle || label} loading="lazy" />
-    ) : (
-      <video src={getVideoPreviewSrc(video.url)} muted playsInline preload="metadata" />
-    )}
-    <VideoBarrage video={video} compact />
-    <span className="video-guide">
-      <b>系列視頻</b>
-      <em>點開連續觀看</em>
-    </span>
-    <span className="video-thumb-license">
-      <b>IP 授權</b>
-      <em>可聯名 · 可開發周邊 · 可品類授權</em>
-    </span>
-    <VideoHeat video={video} />
-    <span className="video-play" aria-hidden="true"></span>
-  </div>
-);
+const VideoThumb = ({ video, label = "播放視頻" }) => {
+  const hasSeries = Array.isArray(video?.seriesVideos) && video.seriesVideos.some(item => item && item.url);
+  return (
+    <div className="video-thumb" aria-label={label}>
+      {video.poster ? (
+        <img src={video.poster} alt={video.title || video.caseTitle || label} loading="lazy" />
+      ) : (
+        <video src={getVideoPreviewSrc(video.url)} muted playsInline preload="metadata" />
+      )}
+      <VideoBarrage video={video} compact />
+      <span className="video-guide">
+        <b>{hasSeries ? "系列視頻" : "主視頻"}</b>
+        <em>{hasSeries ? "點開連續觀看" : "點開觀看"}</em>
+      </span>
+      <span className="video-thumb-license">
+        <b>IP 授權</b>
+        <em>可聯名 · 可開發周邊 · 可品類授權</em>
+      </span>
+      <VideoHeat video={video} />
+      <span className="video-play" aria-hidden="true"></span>
+    </div>
+  );
+};
 
-const VideoSeriesPreview = ({ video }) => {
+const buildVideoSeriesItems = (video = {}) => {
   const series = Array.isArray(video?.seriesVideos) ? video.seriesVideos.filter(item => item && (item.url || item.poster)) : [];
+  const groupUrl = video.groupUrl || video.url;
+  const groupMeta = {
+    groupUrl,
+    groupPoster: video.groupPoster || video.poster,
+    groupTitle: video.groupTitle || video.seriesTitle || video.title,
+    groupCaption: video.groupCaption || video.caption,
+  };
+  return [
+    {
+      ...video,
+      ...groupMeta,
+      url: groupUrl,
+      poster: groupMeta.groupPoster,
+      title: groupMeta.groupTitle,
+      caption: groupMeta.groupCaption,
+      seriesIndex: 0,
+    },
+    ...series.map((item, index) => ({
+      ...video,
+      ...groupMeta,
+      ...item,
+      _id: `${video._id || video.url || "video"}-series-preview-${index + 1}`,
+      title: item.title || video.title,
+      caption: item.caption || video.caption,
+      seriesTitle: video.title,
+      seriesIndex: index + 1,
+    })),
+  ].filter(item => item && item.url);
+};
+
+const VideoSeriesPreview = ({ video, onOpenVideo }) => {
+  const items = buildVideoSeriesItems(video);
+  const series = items.slice(1);
   if (!series.length) return null;
   const previews = series.slice(0, 3);
   return (
@@ -429,14 +465,14 @@ const VideoSeriesPreview = ({ video }) => {
       </div>
       <div className="video-series-thumbs">
         {previews.map((item, index) => (
-          <span className="video-series-thumb" key={`${item.url || item.poster}-${index}`}>
+          <button className="video-series-thumb" type="button" key={`${item.url || item.poster}-${index}`} onClick={(event) => { event.stopPropagation(); onOpenVideo && onOpenVideo(item); }}>
             {item.poster ? (
               <img src={item.poster} alt={item.title || `系列視頻 ${index + 1}`} loading="lazy" />
             ) : (
               <video src={getVideoPreviewSrc(item.url)} muted playsInline preload="metadata" />
             )}
             <em>{String(index + 1).padStart(2, "0")}</em>
-          </span>
+          </button>
         ))}
         {series.length > previews.length && (
           <span className="video-series-more">+{series.length - previews.length}</span>
@@ -481,7 +517,7 @@ const VideoSpotlight = ({ cases = [], siteVideos = [], onOpenVideo, onOpenCase }
                   <strong>{video.title || video.caseTitle || `IP 動態作品 ${i + 1}`}</strong>
                   <span>{video.caption || video.filename || "作品視頻"}</span>
                 </figcaption>
-                <VideoSeriesPreview video={video} />
+                <VideoSeriesPreview video={video} onOpenVideo={onOpenVideo} />
                 {(video.caseTitle || video.caseId) && (
                   <div className="video-case-link" onClick={(event) => { event.stopPropagation(); onOpenCase && onOpenCase(video); }}>
                     <span>對應作品案例</span>
@@ -1195,6 +1231,15 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase }
     }
   };
 
+  const jumpToVideo = (target) => {
+    const root = reelRef.current;
+    if (!root || !target?.url) return;
+    const targetIndex = list.findIndex(item => item.url === target.url);
+    if (targetIndex < 0) return;
+    const slide = root.querySelector(`[data-video-index="${targetIndex}"]`);
+    if (slide) slide.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <div className="video-reel" role="dialog" aria-modal="true" aria-label="作品視頻合集">
       <button className="video-reel-close" type="button" onClick={onClose} aria-label="關閉視頻">×</button>
@@ -1211,6 +1256,28 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase }
               <h3>{video.title || video.caseTitle || "作品視頻"}</h3>
               {(video.caption || video.caseDescription || video.category) && (
                 <p>{video.caption || video.caseDescription || video.category}</p>
+              )}
+              {buildVideoSeriesItems(video).length > 1 && (
+                <div className="video-reel-series" aria-label="系列視頻集數">
+                  <span>系列集數</span>
+                  <div>
+                    {buildVideoSeriesItems(video).slice(0, 6).map((item, itemIndex) => (
+                      <button
+                        type="button"
+                        className={item.url === video.url ? "active" : ""}
+                        key={`${item.url}-${itemIndex}`}
+                        onClick={() => jumpToVideo(item)}
+                      >
+                        {item.poster ? (
+                          <img src={item.poster} alt={item.title || `系列視頻 ${itemIndex + 1}`} />
+                        ) : (
+                          <video src={getVideoPreviewSrc(item.url)} muted playsInline preload="metadata" />
+                        )}
+                        <em>{String(itemIndex + 1).padStart(2, "0")}</em>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
               <div className="video-license-hint" aria-label="IP 授權合作提示">
                 <span>IP 授權</span>

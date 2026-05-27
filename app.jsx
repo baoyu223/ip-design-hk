@@ -66,12 +66,19 @@ function App() {
 
   const expandVideoGroup = (video = {}) => {
     if (!video) return [];
-    const parent = { ...video, seriesTitle: video.seriesTitle || video.title, seriesIndex: 0 };
+    const groupMeta = {
+      groupUrl: video.groupUrl || video.url,
+      groupPoster: video.groupPoster || video.poster,
+      groupTitle: video.groupTitle || video.title,
+      groupCaption: video.groupCaption || video.caption,
+    };
+    const parent = { ...video, ...groupMeta, seriesTitle: video.seriesTitle || video.title, seriesIndex: 0 };
     const series = Array.isArray(video.seriesVideos) ? video.seriesVideos : [];
     return [
       parent,
       ...series.map((item, index) => ({
         ...video,
+        ...groupMeta,
         ...item,
         _id: `${video._id || video.url || "video"}-series-${index + 1}`,
         title: item.title || video.title,
