@@ -10,9 +10,9 @@ export default {
     { name: "caption", title: "視頻說明", type: "string", validation: (R) => R.max(140) },
     {
       name: "file",
-      title: "上傳視頻文件",
+      title: "主視頻文件",
       type: "file",
-      description: "建議 MP4，文件不要太大；首頁與案例詳情都會按原視頻比例顯示。",
+      description: "這條是此作品視頻的主視頻；建議 MP4，文件不要太大。",
       options: { accept: "video/mp4,video/quicktime,video/webm" },
       components: { input: VideoFileInput },
       validation: (R) => R.custom((value) => (
@@ -25,6 +25,51 @@ export default {
       type: "image",
       description: "建議上傳 1:1 正方形封面；首頁、客戶評價與案例詳情會統一以正方形封面展示。",
       options: { hotspot: true },
+    },
+    {
+      name: "seriesVideos",
+      title: "系列視頻（加在同一個作品名稱下面）",
+      type: "array",
+      description: "同一個作品有多條視頻時，在這裡繼續添加；前台會按這裡的順序連續播放。",
+      of: [
+        {
+          type: "object",
+          title: "系列視頻",
+          fields: [
+            { name: "title", title: "系列視頻標題", type: "string", validation: (R) => R.max(80) },
+            { name: "caption", title: "系列視頻說明", type: "string", validation: (R) => R.max(140) },
+            {
+              name: "file",
+              title: "上傳系列視頻",
+              type: "file",
+              description: "建議 MP4；前台會和主視頻一起連續播放。",
+              options: { accept: "video/mp4,video/quicktime,video/webm" },
+              components: { input: VideoFileInput },
+            },
+            {
+              name: "poster",
+              title: "系列視頻封面圖",
+              type: "image",
+              description: "建議 1:1 正方形封面。",
+              options: { hotspot: true },
+            },
+          ],
+          preview: {
+            select: {
+              title: "title",
+              subtitle: "caption",
+              media: "poster",
+            },
+            prepare({ title, subtitle, media }) {
+              return {
+                title: title || "系列視頻",
+                subtitle: subtitle || "會接在主視頻後面播放",
+                media,
+              };
+            },
+          },
+        },
+      ],
     },
     {
       name: "showOnHome",

@@ -109,19 +109,6 @@ function App() {
     }
   };
 
-  // 默认进入作品案例区；如果网址带有其他 #锚点，则尊重用户指定位置。
-  React.useEffect(() => {
-    if (window.location.hash) return;
-    const timer = window.setTimeout(() => {
-      const el = document.getElementById("cases");
-      if (el) {
-        el.scrollIntoView({ block: "start" });
-        window.history.replaceState(null, "", "#cases");
-      }
-    }, 120);
-    return () => window.clearTimeout(timer);
-  }, []);
-
   React.useEffect(() => {
     if (!cases.length) return;
     const openFromHash = () => {
@@ -160,7 +147,7 @@ function App() {
     const dataset = "production";
     const query = `{
       "cases": *[_type == "case" && !(_id in path("drafts.**"))] | order(featured desc, year desc, _createdAt desc){
-        _id, title, description, category, year,
+        _id, _createdAt, title, description, category, year,
         "image": image.asset->url,
         size, featured,
         client, services, tags, body, link,
@@ -174,6 +161,7 @@ function App() {
           placement,
           displayOrder,
           "url": file.asset->url,
+          "poster": poster.asset->url,
           "filename": file.asset->originalFilename
         },
         "pdfs": pdfs[]{
@@ -185,6 +173,7 @@ function App() {
       },
       "siteVideos": *[_type == "siteVideo" && !(_id in path("drafts.**"))] | order(displayOrder asc, _createdAt desc){
         _id,
+        _createdAt,
         title,
         caption,
         showOnHome,
@@ -195,7 +184,15 @@ function App() {
         "caseDescription": relatedCase->description,
         "category": relatedCase->category,
         "url": file.asset->url,
-        "filename": file.asset->originalFilename
+        "poster": poster.asset->url,
+        "filename": file.asset->originalFilename,
+        "seriesVideos": seriesVideos[]{
+          title,
+          caption,
+          "url": file.asset->url,
+          "poster": poster.asset->url,
+          "filename": file.asset->originalFilename
+        }
       }
     }`;
     const encodedQuery = encodeURIComponent(query);
@@ -221,7 +218,29 @@ function App() {
       .then(data => {
         const result = data?.result || {};
         const caseList = Array.isArray(result.cases) ? result.cases : [];
-        const videoList = Array.isArray(result.siteVideos) ? result.siteVideos.filter(video => video && video.url) : [];
+        const rawVideos = Array.isArray(result.siteVideos) ? result.siteVideos : [];
+        const videoList = rawVideos.flatMap((video) => {
+          if (!video) return [];
+          const parent = {
+            ...video,
+            seriesTitle: video.title,
+            seriesIndex: 0,
+          };
+          const series = Array.isArray(video.seriesVideos) ? video.seriesVideos : [];
+          return [
+            parent,
+            ...series.map((item, index) => ({
+              ...video,
+              ...item,
+              _id: `${video._id || "siteVideo"}-series-${index + 1}`,
+              title: item.title || video.title,
+              caption: item.caption || video.caption,
+              displayOrder: (Number(video.displayOrder) || 10) + ((index + 1) / 100),
+              seriesTitle: video.title,
+              seriesIndex: index + 1,
+            })),
+          ].filter(item => item && item.url);
+        });
         setSiteVideos(videoList);
         if (caseList.length > 0) {
           const casesWithVideos = caseList.map(item => ({

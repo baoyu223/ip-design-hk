@@ -249,6 +249,7 @@ const collectCaseVideos = (cases = []) => cases.flatMap((item) => (
     .map(video => ({
       ...video,
       displayOrder: Number.isFinite(Number(video.displayOrder)) ? Number(video.displayOrder) : 999,
+      _createdAt: video._createdAt || item._createdAt,
       caseTitle: getCaseTitle(item),
       caseDescription: getCaseDescription(item),
       category: getCaseCategory(item),
@@ -265,12 +266,87 @@ const getVideoPreviewSrc = (url) => {
   return `${url}#t=0.1`;
 };
 
+const getVideoHeat = (video = {}) => {
+  const key = `${video._id || ""}${video.url || ""}${video.title || video.caseTitle || ""}`;
+  const seed = Array.from(key).reduce((total, char) => total + char.charCodeAt(0), 0);
+  const startedAt = new Date(video._createdAt || "2026-05-25T00:00:00+08:00").getTime();
+  const hours = Math.max(0, (Date.now() - startedAt) / 3600000);
+  const baseViews = 680 + (seed % 420);
+  const baseLikes = 80 + (seed % 90);
+  const views = Math.round(baseViews * Math.pow(1 + (10 / baseViews), hours));
+  const likes = Math.round(baseLikes * Math.pow(1 + (3 / baseLikes), hours));
+  const short = (value) => value >= 10000 ? `${(value / 10000).toFixed(value >= 100000 ? 0 : 1)}w` : value.toLocaleString("zh-HK");
+  return { views: short(views), likes: short(likes) };
+};
+
+const VideoHeat = ({ video }) => {
+  const heat = getVideoHeat(video);
+  return (
+    <span className="video-heat" aria-label={`觀看熱度 ${heat.views}，喜歡熱度 ${heat.likes}`}>
+      <span><i className="heat-eye"></i>{heat.views}</span>
+      <span><i className="heat-like"></i>{heat.likes}</span>
+    </span>
+  );
+};
+
+const getVideoBarrage = (video = {}) => {
+  const title = video.caseTitle || video.title || "這個 IP";
+  const category = video.category || "IP";
+  const samples = [
+    `這個${category}角色很有記憶點`,
+    "視覺質感可以直接做成社交內容",
+    "如果延展成盲盒會很有話題",
+    "品牌情緒比單張海報更清楚",
+    "這條片很適合放招商簡報",
+    `想了解「${title}」授權合作`,
+    "這個 IP 可以授權做文具/公仔嗎？",
+    "角色表情和動作可以再延展一組",
+    "這種風格很適合線下快閃",
+    "有沒有非獨家品類授權方案？",
+  ];
+  const key = `${video._id || ""}${video.url || ""}${title}`;
+  const seed = Array.from(key).reduce((total, char) => total + char.charCodeAt(0), 0);
+  return [0, 1, 2, 3, 4].map((_, index) => samples[(seed + index * 3) % samples.length]);
+};
+
+const VideoBarrage = ({ video, compact = false }) => (
+  <span className={compact ? "video-barrage compact" : "video-barrage"} aria-hidden="true">
+    {getVideoBarrage(video).map((text, index) => (
+      <em key={`${text}-${index}`} style={{ "--i": index }}>{text}</em>
+    ))}
+  </span>
+);
+
+const VideoThumb = ({ video, label = "播放視頻" }) => (
+  <div className="video-thumb" aria-label={label}>
+    {video.poster ? (
+      <img src={video.poster} alt={video.title || video.caseTitle || label} loading="lazy" />
+    ) : (
+      <video src={getVideoPreviewSrc(video.url)} muted playsInline preload="metadata" />
+    )}
+    <VideoBarrage video={video} compact />
+    <span className="video-guide">
+      <b>系列視頻</b>
+      <em>點開連續觀看</em>
+    </span>
+    <VideoHeat video={video} />
+    <span className="video-play" aria-hidden="true"></span>
+  </div>
+);
+
 const VideoSpotlight = ({ cases = [], siteVideos = [], onOpenVideo, onOpenCase }) => {
   const allVideos = collectCaseVideos(cases);
-  const homeVideos = (siteVideos || [])
-    .filter(video => video && video.url && video.showOnHome)
-    .sort((a, b) => (Number(a.displayOrder) || 999) - (Number(b.displayOrder) || 999));
-  const lead = homeVideos[0] || getVideosByPlacement(cases, "home")[0] || allVideos[0];
+  const pickedVideos = [
+    ...(siteVideos || []).filter(video => video && video.url && (video.showOnHome || video.showInTestimonials)),
+    ...getVideosByPlacement(cases, "home"),
+    ...getVideosByPlacement(cases, "testimonial"),
+  ].sort((a, b) => (Number(a.displayOrder) || 999) - (Number(b.displayOrder) || 999));
+  const seen = new Map();
+  (pickedVideos.length ? pickedVideos : allVideos.slice(0, 6)).forEach(video => {
+    if (video?.url && !seen.has(video.url)) seen.set(video.url, video);
+  });
+  const videos = Array.from(seen.values()).slice(0, 8);
+  const lead = videos[0];
   if (!lead) return null;
   return (
     <section id="brand-film" className="video-spotlight" data-screen-label="02A Brand Film">
@@ -286,20 +362,24 @@ const VideoSpotlight = ({ cases = [], siteVideos = [], onOpenVideo, onOpenCase }
             <h2>讓 IP 先動起來，<br/>品牌才會被記住。</h2>
             <p>{lead.caption || lead.caseDescription || "用視頻展示角色性格、品牌情緒與可被傳播的內容片段。"}</p>
           </div>
-          <figure className="video-openable" onClick={() => onOpenVideo && onOpenVideo(lead)}>
-            <video src={getVideoPreviewSrc(lead.url)} controls playsInline preload="metadata" />
-            <figcaption>
-              <strong>{lead.title || lead.caseTitle || "IP 動態作品"}</strong>
-              <span>{lead.filename || "作品視頻"}</span>
-            </figcaption>
-            {(lead.caseTitle || lead.caseId) && (
-              <div className="video-case-link" onClick={(event) => { event.stopPropagation(); onOpenCase && onOpenCase(lead); }}>
-                <span>對應作品案例</span>
-                <strong>{lead.caseTitle || "查看案例詳情"}</strong>
-                <em>查看完整圖片、策略與延展 →</em>
-              </div>
-            )}
-          </figure>
+          <div className="video-stack" aria-label="首頁視頻作品列表">
+            {videos.map((video, i) => (
+              <figure className="video-openable" key={`${video.url}-${i}`} onClick={() => onOpenVideo && onOpenVideo(video)}>
+                <VideoThumb video={video} label={`首頁視頻 ${i + 1}`} />
+                <figcaption>
+                  <strong>{video.title || video.caseTitle || `IP 動態作品 ${i + 1}`}</strong>
+                  <span>{video.caption || video.filename || "作品視頻"}</span>
+                </figcaption>
+                {(video.caseTitle || video.caseId) && (
+                  <div className="video-case-link" onClick={(event) => { event.stopPropagation(); onOpenCase && onOpenCase(video); }}>
+                    <span>對應作品案例</span>
+                    <strong>{video.caseTitle || "查看案例詳情"}</strong>
+                    <em>查看完整圖片、策略與延展 →</em>
+                  </div>
+                )}
+              </figure>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -321,15 +401,7 @@ const TESTIMONIALS = [
   { avatar:"A", name:"Alice Ho", role:"聯名項目經理", brand:"跨界聯名", text:"他們會先找兩個品牌之間真正能成立的理由，再做視覺。這讓聯名不是硬拼在一起，而是有記憶點。" },
 ];
 
-const Testimonials = ({ cases = [], siteVideos = [], onOpenVideo, onOpenCase }) => {
-  const pickedVideos = [
-    ...(siteVideos || [])
-      .filter(video => video && video.url && video.showInTestimonials)
-      .sort((a, b) => (Number(a.displayOrder) || 999) - (Number(b.displayOrder) || 999)),
-    ...getVideosByPlacement(cases, "testimonial"),
-  ];
-  const videos = (pickedVideos.length ? pickedVideos : collectCaseVideos(cases).filter(video => video.placement !== "home").slice(0, 6)).slice(0, 6);
-  return (
+const Testimonials = () => (
   <section id="testimonials" className="testimonials" data-screen-label="02B Testimonials">
     <div className="shell">
       <div className="sec-eyebrow">
@@ -353,28 +425,9 @@ const Testimonials = ({ cases = [], siteVideos = [], onOpenVideo, onOpenCase }) 
           ))}
         </div>
       </div>
-      {videos.length > 0 && (
-        <div className="testimonial-video-strip" aria-label="作品視頻播放">
-          {videos.map((video, i) => (
-            <figure key={`${video.url}-${i}`} className="video-openable" onClick={() => onOpenVideo && onOpenVideo(video)}>
-              <video src={getVideoPreviewSrc(video.url)} controls playsInline preload="metadata" />
-              <figcaption>
-                <strong>{video.title || video.caseTitle || `作品視頻 ${i + 1}`}</strong>
-                <span>{video.caption || video.category || "IP 作品動態"}</span>
-                {(video.caseTitle || video.caseId) && (
-                  <button type="button" onClick={(event) => { event.stopPropagation(); onOpenCase && onOpenCase(video); }}>
-                    對應案例 · {video.caseTitle || "查看詳情"}
-                  </button>
-                )}
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-      )}
     </div>
   </section>
-  );
-};
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SERVICES
@@ -601,6 +654,112 @@ const SHARE_OPTIONS = [
   { id: "x", label: "X", icon: "x" },
 ];
 
+const LICENSE_CATEGORIES = [
+  "潮玩 / 盲盒", "玩具 / 公仔", "文具 / 校園用品", "兒童服裝 / 配飾",
+  "食品 / 飲品包裝", "家居 / 生活用品", "美妝 / 個護", "數碼配件",
+  "文旅 / 展覽 / 快閃", "餐飲聯名", "運動 / 戶外", "禮品 / 企業贈品",
+];
+
+const LicenseInquiry = ({ data }) => {
+  const [state, setState] = React.useState("idle");
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    formData.append("_subject", `IP 授權諮詢｜${getCaseTitle(data)}`);
+    formData.append("_cc", "hello@ip-design.hk,baoguangwen7708@gmail.com");
+    formData.append("_template", "table");
+    formData.append("_captcha", "false");
+    formData.append("案例名稱", getCaseTitle(data));
+    formData.append("案例連結", getCaseShareUrl(data));
+
+    setState("sending");
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/baoguangwen7708@gmail.com", {
+        method: "POST",
+        headers: { "Accept": "application/json" },
+        body: formData,
+      });
+      if (!response.ok) throw new Error("submit failed");
+      form.reset();
+      setState("sent");
+    } catch (error) {
+      setState("error");
+    }
+  };
+
+  return (
+    <section className="license-panel" aria-label="IP 授權合作諮詢">
+      <div className="license-intro">
+        <span>IP Licensing</span>
+        <h4>喜歡這個 IP？<br/>可以直接發起授權合作諮詢。</h4>
+        <p>適合想開發周邊、聯名產品、文旅活動、包裝應用或品類授權的客戶。填完後我們會先判斷授權方式、產品風險與落地可能性。</p>
+      </div>
+
+      <div className="license-guide">
+        <b>可授權方向參考</b>
+        <div>
+          {LICENSE_CATEGORIES.map(item => <span key={item}>{item}</span>)}
+        </div>
+      </div>
+
+      <form className="license-form" onSubmit={onSubmit}>
+        <label>
+          <span>公司名稱</span>
+          <input name="公司名稱" placeholder="例如：某某文化 / 某某玩具有限公司" required />
+        </label>
+        <label>
+          <span>聯絡方式</span>
+          <input name="聯絡方式" placeholder="Email / WhatsApp / WeChat" required />
+        </label>
+        <label>
+          <span>產品類別</span>
+          <input name="產品類別" placeholder="例如：搪膠公仔、文具套裝、兒童服裝、文旅伴手禮" required />
+        </label>
+        <label>
+          <span>是否有授權合作經驗</span>
+          <select name="是否有授權合作經驗" defaultValue="未選擇">
+            <option value="未選擇">請選擇</option>
+            <option value="有，已有品牌/IP 授權經驗">有，已有品牌/IP 授權經驗</option>
+            <option value="沒有，第一次了解授權合作">沒有，第一次了解授權合作</option>
+            <option value="有產品能力，但需要授權流程建議">有產品能力，但需要授權流程建議</option>
+          </select>
+        </label>
+        <label>
+          <span>想拿授權的產品名稱</span>
+          <input name="產品名稱" placeholder="例如：馬逢國系列搪膠擺件 / IP 文具禮盒" />
+        </label>
+        <label>
+          <span>產品規格：材質 + 尺寸</span>
+          <input name="產品規格" placeholder="例如：PVC 搪膠，高 12cm；帆布袋 35×40cm" />
+        </label>
+        <label>
+          <span>產品樣品 / 參考圖片</span>
+          <input name="產品樣品圖片" type="file" accept="image/*,.pdf" multiple />
+        </label>
+        <label>
+          <span>授權合作方式</span>
+          <select name="授權合作方式" defaultValue="非獨家按年品類，保底+分成">
+            <option value="獨家按年買斷品類+保底分成">獨家按年買斷品類 + 保底分成</option>
+            <option value="非獨家按年品類，保底+分成">非獨家按年品類，保底 + 分成</option>
+            <option value="先做小批量聯名測試">先做小批量聯名測試</option>
+            <option value="需要先評估合作模式">需要先評估合作模式</option>
+          </select>
+        </label>
+        <label className="license-wide">
+          <span>備註 / 其他需求</span>
+          <textarea name="其他需求" rows={4} placeholder="例如：預計上市時間、銷售渠道、首批數量、目標客群、希望授權區域等" />
+        </label>
+        <button type="submit" disabled={state === "sending"}>
+          {state === "sending" ? "正在提交..." : "提交 IP 授權初步諮詢"} <em>→</em>
+        </button>
+        {state === "sent" && <p className="license-success">已收到，我們會根據產品類別與合作方式先做初步判斷。</p>}
+        {state === "error" && <p className="license-error">提交暫時未成功，請稍後再試，或直接發送至 hello@ip-design.hk。</p>}
+      </form>
+    </section>
+  );
+};
+
 const Cases = ({ cases, onOpen }) => {
   // 来自 Sanity 后台的数据优先；空时使用 fallback 占位
   const fromSanity = cases && cases.length > 0;
@@ -799,10 +958,13 @@ const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate }) 
 
         {videos.length > 0 && (
           <div className="case-videos">
-            <h4>影片</h4>
+            <div className="case-videos-head">
+              <h4>影片</h4>
+              <p>這個作品包含系列動態內容，點開任一視頻即可全屏連續觀看，向上滑動切換下一條。</p>
+            </div>
             {videos.map((video, i) => (
               <figure key={`${video.url}-${i}`} className="video-openable" onClick={() => onOpenVideo && onOpenVideo(video)}>
-                <video src={getVideoPreviewSrc(video.url)} controls playsInline preload="metadata" />
+                <VideoThumb video={video} label={`案例視頻 ${i + 1}`} />
                 {(video.title || video.caption || video.filename) && (
                   <figcaption>
                     <strong>{video.title || video.filename}</strong>
@@ -813,6 +975,8 @@ const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate }) 
             ))}
           </div>
         )}
+
+        <LicenseInquiry data={data} />
 
         {pdfs.length > 0 && (
           <div className="case-pdfs">
@@ -845,6 +1009,52 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase }
   }, [initialIndex, list.length]);
 
   React.useEffect(() => {
+    const root = reelRef.current;
+    if (!root || !list.length) return;
+    const playSlide = (slide) => {
+      root.querySelectorAll("video").forEach((video) => {
+        if (!slide || !slide.contains(video)) {
+          video.pause();
+          video.currentTime = 0;
+        }
+      });
+      const activeVideo = slide && slide.querySelector("video");
+      if (activeVideo) {
+        activeVideo.muted = false;
+        activeVideo.volume = 1;
+        activeVideo.play().catch(() => {});
+      }
+    };
+    const slides = Array.from(root.querySelectorAll(".video-reel-slide"));
+    const observer = new IntersectionObserver((entries) => {
+      const active = entries
+        .filter(entry => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (active && active.intersectionRatio > 0.62) playSlide(active.target);
+    }, { root, threshold: [0.62, 0.78, 0.9] });
+    slides.forEach(slide => observer.observe(slide));
+    const onEnded = (event) => {
+      const currentSlide = event.currentTarget.closest(".video-reel-slide");
+      const currentIndex = slides.indexOf(currentSlide);
+      if (currentIndex < 0 || !slides.length) return;
+      const nextSlide = slides[(currentIndex + 1) % slides.length];
+      if (!nextSlide) return;
+      nextSlide.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.setTimeout(() => playSlide(nextSlide), 360);
+    };
+    root.querySelectorAll("video").forEach(video => video.addEventListener("ended", onEnded));
+    const firstSlide = root.querySelector(`[data-video-index="${initialIndex}"]`) || slides[0];
+    window.setTimeout(() => playSlide(firstSlide), 180);
+    return () => {
+      observer.disconnect();
+      root.querySelectorAll("video").forEach((video) => {
+        video.removeEventListener("ended", onEnded);
+        video.pause();
+      });
+    };
+  }, [initialIndex, list.length]);
+
+  React.useEffect(() => {
     const onKey = (event) => {
       if (event.key === "Escape") onClose && onClose();
     };
@@ -860,9 +1070,13 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase }
       <div className="video-reel-track" ref={reelRef}>
         {list.map((video, index) => (
           <section className="video-reel-slide" key={`${video.url}-${index}`} data-video-index={index}>
-            <video src={getVideoPreviewSrc(video.url)} controls playsInline preload={Math.abs(index - initialIndex) <= 1 ? "metadata" : "none"} />
+            <video src={getVideoPreviewSrc(video.url)} poster={video.poster || ""} controls playsInline preload={Math.abs(index - initialIndex) <= 1 ? "metadata" : "none"} />
+            <VideoBarrage video={video} />
             <div className="video-reel-caption">
-              <span>{String(index + 1).padStart(2, "0")} / {String(list.length).padStart(2, "0")}</span>
+              <div className="video-reel-meta">
+                <span>{String(index + 1).padStart(2, "0")} / {String(list.length).padStart(2, "0")}</span>
+                <VideoHeat video={video} />
+              </div>
               <h3>{video.title || video.caseTitle || "作品視頻"}</h3>
               {(video.caption || video.caseDescription || video.category) && (
                 <p>{video.caption || video.caseDescription || video.category}</p>
