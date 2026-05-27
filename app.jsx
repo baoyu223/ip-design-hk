@@ -22,12 +22,21 @@ function App() {
   const [cases, setCases] = React.useState([]);
   const [siteVideos, setSiteVideos] = React.useState([]);
   const [openCase, setOpenCase] = React.useState(null);
+  const [videoFeed, setVideoFeed] = React.useState(null);
 
   const openCaseDetail = (item, updateHash = true) => {
     setOpenCase(item);
     if (updateHash && item?._id) {
       window.history.replaceState(null, "", `#case-${encodeURIComponent(item._id)}`);
     }
+  };
+
+  const openCaseByOffset = (offset) => {
+    if (!openCase || !cases.length) return;
+    const index = cases.findIndex(item => item._id === openCase._id);
+    if (index < 0) return;
+    const nextIndex = (index + offset + cases.length) % cases.length;
+    openCaseDetail(cases[nextIndex]);
   };
 
   const closeCaseDetail = () => {
@@ -43,11 +52,61 @@ function App() {
   }, [openCase]);
 
   React.useEffect(() => {
+    document.body.style.overflow = videoFeed ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [videoFeed]);
+
+  React.useEffect(() => {
     if (!openCase) return;
     const onKey = (e) => { if (e.key === "Escape") setOpenCase(null); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [openCase]);
+
+  const allPlayableVideos = React.useMemo(() => {
+    const fromCases = (cases || []).flatMap(item => (
+      (item.videos || [])
+        .filter(video => video && video.url)
+        .map(video => ({
+          ...video,
+          caseTitle: item.title,
+          caseDescription: item.description,
+          category: item.category,
+          displayOrder: Number.isFinite(Number(video.displayOrder)) ? Number(video.displayOrder) : 999,
+        }))
+    ));
+    const fromSite = (siteVideos || [])
+      .filter(video => video && video.url)
+      .map(video => ({
+        ...video,
+        caseTitle: video.caseTitle,
+        caseDescription: video.caseDescription,
+        displayOrder: Number.isFinite(Number(video.displayOrder)) ? Number(video.displayOrder) : 999,
+      }));
+    const seen = new Map();
+    [...fromSite, ...fromCases]
+      .sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999))
+      .forEach(video => {
+        if (!seen.has(video.url)) seen.set(video.url, video);
+      });
+    return Array.from(seen.values());
+  }, [cases, siteVideos]);
+
+  const openVideoFeed = (video) => {
+    if (!video?.url) return;
+    const index = Math.max(0, allPlayableVideos.findIndex(item => item.url === video.url));
+    setVideoFeed({ index });
+  };
+
+  const openRelatedCase = (video) => {
+    const id = video?.caseId;
+    if (!id) return;
+    const matched = cases.find(item => item._id === id);
+    if (matched) {
+      setVideoFeed(null);
+      openCaseDetail(matched);
+    }
+  };
 
   // 默认进入作品案例区；如果网址带有其他 #锚点，则尊重用户指定位置。
   React.useEffect(() => {
@@ -219,14 +278,24 @@ function App() {
       <main>
         <Hero variant={t.heroVariant} />
         <Marquee />
-        <VideoSpotlight cases={cases} siteVideos={siteVideos} />
+        <VideoSpotlight cases={cases} siteVideos={siteVideos} onOpenVideo={openVideoFeed} onOpenCase={openRelatedCase} />
         <About />
-        <Testimonials cases={cases} siteVideos={siteVideos} />
+        <Testimonials cases={cases} siteVideos={siteVideos} onOpenVideo={openVideoFeed} onOpenCase={openRelatedCase} />
         <Services />
         <Methodology />
         <Cases cases={cases} onOpen={openCaseDetail} />
         <Clients />
-        {openCase && <CaseModal data={openCase} onClose={closeCaseDetail} />}
+        {openCase && (
+          <CaseModal
+            data={openCase}
+            onClose={closeCaseDetail}
+            onOpenVideo={openVideoFeed}
+            onPrev={() => openCaseByOffset(-1)}
+            onNext={() => openCaseByOffset(1)}
+            canNavigate={cases.length > 1}
+          />
+        )}
+        {videoFeed && <VideoReelOverlay videos={allPlayableVideos} initialIndex={videoFeed.index} onClose={() => setVideoFeed(null)} onOpenCase={openRelatedCase} />}
         <Pricing onPick={setSelectedTier} />
         <Contact selectedTier={selectedTier} onTierChange={setSelectedTier} />
       </main>

@@ -259,7 +259,13 @@ const getVideosByPlacement = (cases = [], placement) => (
   collectCaseVideos(cases).filter(video => video.placement === placement)
 );
 
-const VideoSpotlight = ({ cases = [], siteVideos = [] }) => {
+const getVideoPreviewSrc = (url) => {
+  if (!url) return "";
+  if (url.includes("#")) return url;
+  return `${url}#t=0.1`;
+};
+
+const VideoSpotlight = ({ cases = [], siteVideos = [], onOpenVideo, onOpenCase }) => {
   const allVideos = collectCaseVideos(cases);
   const homeVideos = (siteVideos || [])
     .filter(video => video && video.url && video.showOnHome)
@@ -280,12 +286,19 @@ const VideoSpotlight = ({ cases = [], siteVideos = [] }) => {
             <h2>讓 IP 先動起來，<br/>品牌才會被記住。</h2>
             <p>{lead.caption || lead.caseDescription || "用視頻展示角色性格、品牌情緒與可被傳播的內容片段。"}</p>
           </div>
-          <figure>
-            <video src={lead.url} controls playsInline preload="metadata" />
+          <figure className="video-openable" onClick={() => onOpenVideo && onOpenVideo(lead)}>
+            <video src={getVideoPreviewSrc(lead.url)} controls playsInline preload="metadata" />
             <figcaption>
               <strong>{lead.title || lead.caseTitle || "IP 動態作品"}</strong>
               <span>{lead.filename || "作品視頻"}</span>
             </figcaption>
+            {(lead.caseTitle || lead.caseId) && (
+              <div className="video-case-link" onClick={(event) => { event.stopPropagation(); onOpenCase && onOpenCase(lead); }}>
+                <span>對應作品案例</span>
+                <strong>{lead.caseTitle || "查看案例詳情"}</strong>
+                <em>查看完整圖片、策略與延展 →</em>
+              </div>
+            )}
           </figure>
         </div>
       </div>
@@ -308,7 +321,7 @@ const TESTIMONIALS = [
   { avatar:"A", name:"Alice Ho", role:"聯名項目經理", brand:"跨界聯名", text:"他們會先找兩個品牌之間真正能成立的理由，再做視覺。這讓聯名不是硬拼在一起，而是有記憶點。" },
 ];
 
-const Testimonials = ({ cases = [], siteVideos = [] }) => {
+const Testimonials = ({ cases = [], siteVideos = [], onOpenVideo, onOpenCase }) => {
   const pickedVideos = [
     ...(siteVideos || [])
       .filter(video => video && video.url && video.showInTestimonials)
@@ -343,11 +356,16 @@ const Testimonials = ({ cases = [], siteVideos = [] }) => {
       {videos.length > 0 && (
         <div className="testimonial-video-strip" aria-label="作品視頻播放">
           {videos.map((video, i) => (
-            <figure key={`${video.url}-${i}`}>
-              <video src={video.url} controls playsInline preload="metadata" />
+            <figure key={`${video.url}-${i}`} className="video-openable" onClick={() => onOpenVideo && onOpenVideo(video)}>
+              <video src={getVideoPreviewSrc(video.url)} controls playsInline preload="metadata" />
               <figcaption>
                 <strong>{video.title || video.caseTitle || `作品視頻 ${i + 1}`}</strong>
                 <span>{video.caption || video.category || "IP 作品動態"}</span>
+                {(video.caseTitle || video.caseId) && (
+                  <button type="button" onClick={(event) => { event.stopPropagation(); onOpenCase && onOpenCase(video); }}>
+                    對應案例 · {video.caseTitle || "查看詳情"}
+                  </button>
+                )}
               </figcaption>
             </figure>
           ))}
@@ -650,16 +668,42 @@ const Cases = ({ cases, onOpen }) => {
   );
 };
 
-const CaseModal = ({ data, onClose }) => {
+const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate }) => {
   const images = getCaseImages(data);
   const videos = (data.videos || []).filter(video => video && video.url);
   const pdfs = (data.pdfs || []).filter(pdf => pdf && pdf.url);
   const hasDetails = data.client || data.services?.length || data.tags?.length || data.body?.length || data.link || pdfs.length;
+  const touchRef = React.useRef(null);
+
+  const onTouchStart = (event) => {
+    const touch = event.touches && event.touches[0];
+    if (!touch) return;
+    touchRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const onTouchEnd = (event) => {
+    if (!touchRef.current || !canNavigate) return;
+    const touch = event.changedTouches && event.changedTouches[0];
+    if (!touch) return;
+    const dx = touch.clientX - touchRef.current.x;
+    const dy = touch.clientY - touchRef.current.y;
+    touchRef.current = null;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+      if (dx < 0) onNext && onNext();
+      if (dx > 0) onPrev && onPrev();
+    }
+  };
 
   return (
     <div className="case-modal" role="dialog" aria-modal="true" aria-label={getCaseTitle(data)} onClick={onClose}>
-      <div className="case-modal-panel" onClick={(e) => e.stopPropagation()}>
+      <div className="case-modal-panel" onClick={(e) => e.stopPropagation()} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <button className="case-modal-close" type="button" onClick={onClose} aria-label="關閉案例詳情">×</button>
+        {canNavigate && (
+          <div className="case-modal-nav" aria-label="切換案例">
+            <button type="button" onClick={onPrev} aria-label="上一個案例">‹</button>
+            <button type="button" onClick={onNext} aria-label="下一個案例">›</button>
+          </div>
+        )}
 
         <div className="case-modal-head">
           <div>
@@ -668,6 +712,13 @@ const CaseModal = ({ data, onClose }) => {
               {data.year && <span>{data.year}</span>}
             </div>
             <h3>{getCaseTitle(data)}</h3>
+            <div className="case-author">
+              <span className="case-author-avatar">ibd</span>
+              <span>
+                <strong>燃點品牌設計</strong>
+                <em>Ignition Brand Design</em>
+              </span>
+            </div>
             {getCaseDescription(data) && <p>{getCaseDescription(data)}</p>}
           </div>
           {data.link && (
@@ -729,8 +780,8 @@ const CaseModal = ({ data, onClose }) => {
           <div className="case-videos">
             <h4>影片</h4>
             {videos.map((video, i) => (
-              <figure key={`${video.url}-${i}`}>
-                <video src={video.url} controls playsInline preload="metadata" />
+              <figure key={`${video.url}-${i}`} className="video-openable" onClick={() => onOpenVideo && onOpenVideo(video)}>
+                <video src={getVideoPreviewSrc(video.url)} controls playsInline preload="metadata" />
                 {(video.title || video.caption || video.filename) && (
                   <figcaption>
                     <strong>{video.title || video.filename}</strong>
@@ -761,4 +812,51 @@ const CaseModal = ({ data, onClose }) => {
   );
 };
 
-Object.assign(window, { Nav, Hero, Marquee, VideoSpotlight, About, Testimonials, Services, Methodology, Cases, CaseModal, NAV });
+const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase }) => {
+  const reelRef = React.useRef(null);
+  const list = videos.filter(video => video && video.url);
+
+  React.useEffect(() => {
+    const el = reelRef.current;
+    if (!el || !list.length) return;
+    const slide = el.querySelector(`[data-video-index="${initialIndex}"]`);
+    if (slide) slide.scrollIntoView({ block: "start" });
+  }, [initialIndex, list.length]);
+
+  React.useEffect(() => {
+    const onKey = (event) => {
+      if (event.key === "Escape") onClose && onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  if (!list.length) return null;
+
+  return (
+    <div className="video-reel" role="dialog" aria-modal="true" aria-label="作品視頻合集">
+      <button className="video-reel-close" type="button" onClick={onClose} aria-label="關閉視頻">×</button>
+      <div className="video-reel-track" ref={reelRef}>
+        {list.map((video, index) => (
+          <section className="video-reel-slide" key={`${video.url}-${index}`} data-video-index={index}>
+            <video src={getVideoPreviewSrc(video.url)} controls playsInline preload={Math.abs(index - initialIndex) <= 1 ? "metadata" : "none"} />
+            <div className="video-reel-caption">
+              <span>{String(index + 1).padStart(2, "0")} / {String(list.length).padStart(2, "0")}</span>
+              <h3>{video.title || video.caseTitle || "作品視頻"}</h3>
+              {(video.caption || video.caseDescription || video.category) && (
+                <p>{video.caption || video.caseDescription || video.category}</p>
+              )}
+              {(video.caseTitle || video.caseId) && (
+                <button type="button" onClick={() => onOpenCase && onOpenCase(video)}>
+                  查看對應案例 · {video.caseTitle || "作品詳情"}
+                </button>
+              )}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+Object.assign(window, { Nav, Hero, Marquee, VideoSpotlight, About, Testimonials, Services, Methodology, Cases, CaseModal, VideoReelOverlay, NAV });

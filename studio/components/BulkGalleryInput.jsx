@@ -4,6 +4,10 @@ import { PatchEvent, insert, setIfMissing, useClient } from "sanity";
 
 const makeKey = () => Math.random().toString(36).slice(2, 12);
 
+const naturalSort = (a, b) => (
+  a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" })
+);
+
 export function BulkGalleryInput(props) {
   const client = useClient({ apiVersion: "2024-01-01" });
   const inputRef = React.useRef(null);
@@ -11,7 +15,9 @@ export function BulkGalleryInput(props) {
   const [message, setMessage] = React.useState("");
 
   const uploadFiles = async (files) => {
-    const images = Array.from(files || []).filter((file) => file.type.startsWith("image/"));
+    const images = Array.from(files || [])
+      .filter((file) => file.type.startsWith("image/"))
+      .sort(naturalSort);
     if (!images.length) {
       setMessage("請選擇圖片文件。");
       return;
@@ -27,10 +33,11 @@ export function BulkGalleryInput(props) {
           _type: "image",
           _key: makeKey(),
           asset: { _type: "reference", _ref: asset._id },
+          caption: file.name.replace(/\.[^.]+$/, ""),
         });
       }
       props.onChange(PatchEvent.from([setIfMissing([]), insert(items, "after", [-1])]));
-      setMessage(`已加入 ${items.length} 張圖片，可拖動調整順序。`);
+      setMessage(`已按文件名順序加入 ${items.length} 張圖片，例如 001 → 002 → 010。下方每張圖左側的拖動手柄可手動調整先後。`);
     } catch (error) {
       setMessage("批量上傳未成功，請稍後再試或分批上傳。");
     } finally {
@@ -45,7 +52,8 @@ export function BulkGalleryInput(props) {
         <Flex align="center" justify="space-between" gap={3}>
           <Stack space={2}>
             <Text size={1} weight="semibold">批量上傳細節圖</Text>
-            <Text size={1} muted>可一次選擇多張 PNG / JPG / WebP，圖片會自動追加到下方列表。</Text>
+            <Text size={1} muted>可一次選擇多張 PNG / JPG / WebP；系統會按文件名自然排序，例如 001、002、003、010。</Text>
+            <Text size={1} muted>上傳後可在下方列表用左側拖動手柄手動調整圖片先後。</Text>
             {message && <Text size={1}>{message}</Text>}
           </Stack>
           <Button
