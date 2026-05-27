@@ -2,7 +2,7 @@ const PROJECT_ID = "6fxw2dmo";
 const DATASET = "production";
 const DEFAULT_TITLE = "燃點品牌設計 IBD｜燃点・Ignition Brand Design";
 const DEFAULT_DESCRIPTION = "香港 IP 品牌策劃設計工作室，專注 IP品牌設計、IP形象設計、文創IP、文旅IP、潮玩設計與品牌全案。";
-const DEFAULT_IMAGE = "https://ip-design.hk/assets/poster.jpg";
+const DEFAULT_IMAGE = "https://ip-design.hk/assets/share-cover.jpg";
 
 const escapeHtml = (value = "") => String(value)
   .replace(/&/g, "&amp;")
@@ -29,6 +29,8 @@ const patchMeta = (html, meta) => {
   next = replaceTag(next, /<meta property="og:url" content="[^"]*" \/>/i, `<meta property="og:url" content="${url}" />`);
   next = replaceTag(next, /<meta property="og:type" content="[^"]*" \/>/i, `<meta property="og:type" content="${meta.type || "website"}" />`);
   next = replaceTag(next, /<meta property="og:image" content="[^"]*" \/>/i, `<meta property="og:image" content="${image}" />`);
+  next = replaceTag(next, /<meta property="og:image:secure_url" content="[^"]*" \/>/i, `<meta property="og:image:secure_url" content="${image}" />`);
+  next = replaceTag(next, /<meta property="og:image:type" content="[^"]*" \/>/i, `<meta property="og:image:type" content="image/jpeg" />`);
   next = replaceTag(next, /<meta property="og:image:alt" content="[^"]*" \/>/i, `<meta property="og:image:alt" content="${imageAlt}" />`);
   next = replaceTag(next, /<meta property="og:image:width" content="[^"]*" \/>/i, `<meta property="og:image:width" content="1200" />`);
   next = replaceTag(next, /<meta property="og:image:height" content="[^"]*" \/>/i, `<meta property="og:image:height" content="630" />`);
