@@ -18,6 +18,7 @@ const FONT_OPTIONS = [
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [active, setActive] = React.useState("home");
+  const [infoPage, setInfoPage] = React.useState(null);
   const [selectedTier, setSelectedTier] = React.useState(null);
   const [cases, setCases] = React.useState([]);
   const [siteVideos, setSiteVideos] = React.useState([]);
@@ -140,6 +141,18 @@ function App() {
     return () => window.removeEventListener("hashchange", openFromHash);
   }, [cases]);
 
+  React.useEffect(() => {
+    const id = window.location.hash.replace("#", "");
+    if (id === "services" || id === "method") {
+      setInfoPage(id);
+      setActive(id);
+      window.requestAnimationFrame(() => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ block: "start" });
+      });
+    }
+  }, []);
+
   // 从 Sanity 后台拉取作品案例数据
   // Project ID: 6fxw2dmo · Dataset: production
   React.useEffect(() => {
@@ -237,11 +250,13 @@ function App() {
   // smooth scroll on nav click
   const onNav = (id) => {
     if (id !== "cases" && openCase) setOpenCase(null);
-    const el = document.getElementById(id);
-    if (el) {
-      window.history.replaceState(null, "", `#${id}`);
-      el.scrollIntoView({ behavior:"smooth", block:"start" });
-    }
+    setInfoPage(id === "services" || id === "method" ? id : null);
+    setActive(id);
+    window.history.replaceState(null, "", `#${id}`);
+    window.requestAnimationFrame(() => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior:"smooth", block:"start" });
+    });
   };
 
   // scroll-spy
@@ -281,8 +296,8 @@ function App() {
         <VideoSpotlight cases={cases} siteVideos={siteVideos} onOpenVideo={openVideoFeed} onOpenCase={openRelatedCase} />
         <About />
         <Testimonials cases={cases} siteVideos={siteVideos} onOpenVideo={openVideoFeed} onOpenCase={openRelatedCase} />
-        <Services />
-        <Methodology />
+        {infoPage === "services" && <Services />}
+        {infoPage === "method" && <Methodology />}
         <Cases cases={cases} onOpen={openCaseDetail} />
         <Clients />
         {openCase && (

@@ -1,4 +1,5 @@
 // schemas/siteVideo.js — 獨立視頻管理
+import { VideoFileInput } from "../components/VideoFileInput";
 
 export default {
   name: "siteVideo",
@@ -13,6 +14,7 @@ export default {
       type: "file",
       description: "建議 MP4，文件不要太大；首頁與案例詳情都會按原視頻比例顯示。",
       options: { accept: "video/mp4,video/quicktime,video/webm" },
+      components: { input: VideoFileInput },
       validation: (R) => R.required(),
     },
     {

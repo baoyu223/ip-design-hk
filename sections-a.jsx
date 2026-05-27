@@ -675,6 +675,15 @@ const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate }) 
   const hasDetails = data.client || data.services?.length || data.tags?.length || data.body?.length || data.link || pdfs.length;
   const touchRef = React.useRef(null);
 
+  const jumpFromDetail = (id) => {
+    onClose && onClose();
+    window.setTimeout(() => {
+      window.history.replaceState(null, "", `#${id}`);
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 40);
+  };
+
   const onTouchStart = (event) => {
     const touch = event.touches && event.touches[0];
     if (!touch) return;
@@ -697,6 +706,18 @@ const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate }) 
   return (
     <div className="case-modal" role="dialog" aria-modal="true" aria-label={getCaseTitle(data)} onClick={onClose}>
       <div className="case-modal-panel" onClick={(e) => e.stopPropagation()} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        <div className="case-detail-topnav">
+          <button className="case-detail-brand" type="button" onClick={() => jumpFromDetail("home")} aria-label="返回首頁">
+            <span>IBD</span>
+            <em>燃點品牌設計</em>
+          </button>
+          <div className="case-detail-navlinks">
+            <button type="button" onClick={() => jumpFromDetail("cases")}>案例列表</button>
+            <button type="button" onClick={() => jumpFromDetail("contact")}>聯繫我們</button>
+            <button type="button" onClick={() => shareCase(data, "native")}>分享</button>
+          </div>
+          <button className="case-detail-close-mini" type="button" onClick={onClose} aria-label="關閉案例詳情">×</button>
+        </div>
         <button className="case-modal-close" type="button" onClick={onClose} aria-label="關閉案例詳情">×</button>
         {canNavigate && (
           <div className="case-modal-nav" aria-label="切換案例">
