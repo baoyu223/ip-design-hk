@@ -57,14 +57,8 @@ export default {
     },
     { name: "body", title: "詳細描述", type: "array", of: [{ type: "block" }] },
     {
-      name: "gallery", title: "細節圖（多張）", type: "array",
-      description: "可一次選擇或拖入多張圖片；圖片會按這裡的順序顯示在案例詳情。",
-      components: { input: BulkGalleryInput },
-      of: [{ type: "image", options: { hotspot: true }, fields: [{ name: "caption", title: "圖片說明", type: "string" }] }],
-    },
-    {
-      name: "videos", title: "影片（可多個）", type: "array",
-      description: "可上傳 MP4 / MOV / WebM，用於展示案例動畫、品牌片或過程視頻。",
+      name: "videos", title: "影片 / 視頻（可指定前台位置）", type: "array",
+      description: "先點「Add item」新增影片，再選擇它要顯示在首頁視頻板塊、客戶評價下方，或只在案例詳情顯示。",
       of: [
         {
           type: "object",
@@ -74,9 +68,9 @@ export default {
             { name: "caption", title: "影片說明", type: "string", validation: (R) => R.max(120) },
             {
               name: "placement",
-              title: "前台展示位置",
+              title: "這條影片放到哪裡？",
               type: "string",
-              description: "選擇這條影片要出現在網站哪個位置；案例詳情頁仍會顯示全部影片。",
+              description: "如果選首頁，會出現在「關於我們」上方的視頻板塊；如果選客戶評價，會出現在客戶評價下方。",
               options: {
                 list: [
                   { title: "首頁視頻板塊", value: "home" },
@@ -89,7 +83,7 @@ export default {
             },
             {
               name: "displayOrder",
-              title: "前台排序",
+              title: "顯示排序",
               type: "number",
               description: "數字越小越靠前；首頁視頻板塊會優先顯示排序最前的一條。",
               initialValue: 10,
@@ -111,6 +105,12 @@ export default {
           },
         },
       ],
+    },
+    {
+      name: "gallery", title: "細節圖（多張）", type: "array",
+      description: "可一次選擇或拖入多張圖片；圖片會按這裡的順序顯示在案例詳情。",
+      components: { input: BulkGalleryInput },
+      of: [{ type: "image", options: { hotspot: true }, fields: [{ name: "caption", title: "圖片說明", type: "string" }] }],
     },
     {
       name: "pdfs", title: "PDF 文件（可多個）", type: "array",

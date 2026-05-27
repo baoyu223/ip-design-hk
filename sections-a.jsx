@@ -260,7 +260,8 @@ const getVideosByPlacement = (cases = [], placement) => (
 );
 
 const VideoSpotlight = ({ cases = [] }) => {
-  const lead = getVideosByPlacement(cases, "home")[0];
+  const allVideos = collectCaseVideos(cases);
+  const lead = getVideosByPlacement(cases, "home")[0] || allVideos[0];
   if (!lead) return null;
   return (
     <section id="brand-film" className="video-spotlight" data-screen-label="02A Brand Film">
@@ -305,7 +306,8 @@ const TESTIMONIALS = [
 ];
 
 const Testimonials = ({ cases = [] }) => {
-  const videos = getVideosByPlacement(cases, "testimonial").slice(0, 6);
+  const pickedVideos = getVideosByPlacement(cases, "testimonial");
+  const videos = (pickedVideos.length ? pickedVideos : collectCaseVideos(cases).filter(video => video.placement !== "home").slice(0, 6)).slice(0, 6);
   return (
   <section id="testimonials" className="testimonials" data-screen-label="02B Testimonials">
     <div className="shell">
