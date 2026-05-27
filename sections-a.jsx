@@ -123,11 +123,15 @@ const HERO_BARRAGE = [
 
 const HeroBarrage = () => (
   <div className="hero-barrage" aria-label="燃點IP品牌策劃能力">
-    <div className="hero-barrage-track">
-      {[...HERO_BARRAGE, ...HERO_BARRAGE].map((text, index) => (
-        <span key={`${text}-${index}`}>{text}</span>
-      ))}
-    </div>
+    {[0, 1, 2].map((row) => (
+      <div className="hero-barrage-row" key={row}>
+        <div className="hero-barrage-track">
+          {[...HERO_BARRAGE.slice(row * 5, row * 5 + 7), ...HERO_BARRAGE.slice(row * 5, row * 5 + 7)].map((text, index) => (
+            <span key={`${row}-${text}-${index}`}>{text}</span>
+          ))}
+        </div>
+      </div>
+    ))}
   </div>
 );
 
@@ -139,6 +143,7 @@ const Hero = ({ variant = "sunburst" }) => (
       <div><b>品牌視覺 VI</b> · 門店形象設計</div>
       <div><b>包裝策劃</b> · 系列視覺設計</div>
     </div>
+    <HeroBarrage />
 
     {variant === "sunburst" && (
       <div className="hero-bg">
@@ -164,7 +169,6 @@ const Hero = ({ variant = "sunburst" }) => (
 
     <div className="shell" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 56px" }}>
       <div className="hero-content">
-        <HeroBarrage />
         <div className="hero-mark hero-mark-image">
           <img className="hero-wordmark hero-wordmark-black" src="assets/brand-wordmark-black-alpha.png" alt="燃點" />
           <img className="hero-wordmark hero-wordmark-white" src="assets/brand-wordmark-white-alpha.png" alt="燃點" />
