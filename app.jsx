@@ -345,6 +345,7 @@ function App() {
         <Contact selectedTier={selectedTier} onTierChange={setSelectedTier} />
       </main>
       <Footer />
+      <ShareDock onNav={onNav} />
 
       <TweaksPanel title="Tweaks · 燃點">
         <TweakSection label="主题模式" />

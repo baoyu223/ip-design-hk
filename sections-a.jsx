@@ -757,9 +757,50 @@ const getCaseShareUrl = (data) => {
   if (!data._id) return `${base}#cases`;
   return `${base}?case=${encodeURIComponent(data._id)}`;
 };
+const getSiteShareUrl = () => `${window.location.origin}${window.location.pathname}`;
+const SITE_SHARE_TITLE = "燃點品牌設計 IBD｜IP品牌策劃設計";
+const SITE_SHARE_TEXT = "香港 IP 品牌策劃設計工作室：IP設計、IP形象設計、潮玩設計、品牌全案與 IP 授權轉化。";
+const copyText = (value, doneText = "鏈接已複製。") => {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(value).then(() => window.alert(doneText)).catch(() => window.prompt("複製以下內容：", value));
+  } else {
+    window.prompt("複製以下內容：", value);
+  }
+};
+const shareSite = (channel) => {
+  const title = SITE_SHARE_TITLE;
+  const text = SITE_SHARE_TEXT;
+  const url = getSiteShareUrl();
+
+  if (channel === "wechat" || channel === "copy") {
+    copyText(url, channel === "wechat" ? "網站鏈接已複製，可粘貼到微信或朋友圈。" : "網站鏈接已複製。");
+    return;
+  }
+
+  if (channel === "whatsapp") {
+    window.open(`https://wa.me/?text=${encodeURIComponent(`${title}\n${text}\n${url}`)}`, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  if (channel === "facebook") {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  if (channel === "x") {
+    window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  if (navigator.share) {
+    navigator.share({ title, text, url }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => window.alert("網站鏈接已複製。"));
+  }
+};
 const shareCase = (data, channel) => {
   const title = getCaseTitle(data);
-  const text = getCaseDescription(data);
+  const text = `${getCaseDescription(data) || "燃點品牌設計作品案例"}｜查看完整圖片、視頻、策略延展與 IP 授權合作可能。`;
   const url = getCaseShareUrl(data);
 
   if (channel === "wechat") {
@@ -801,6 +842,58 @@ const SHARE_OPTIONS = [
   { id: "instagram", label: "Instagram", icon: "ig" },
   { id: "x", label: "X", icon: "x" },
 ];
+
+const ShareDock = ({ onNav }) => {
+  const [open, setOpen] = React.useState(false);
+  const url = getSiteShareUrl();
+  const payload = `${SITE_SHARE_TITLE}\n${SITE_SHARE_TEXT}\n${url}`;
+  const qr = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encodeURIComponent(url)}`;
+  return (
+    <>
+      <aside className="share-dock" aria-label="H5 傳播快捷操作">
+        <div>
+          <span>H5 SHARE</span>
+          <b>把燃點轉給品牌負責人</b>
+        </div>
+        <button type="button" onClick={() => setOpen(true)}>打開分享卡</button>
+        <button type="button" onClick={() => shareSite("native")}>系統分享</button>
+        <button type="button" className="hot" onClick={() => onNav && onNav("contact")}>啟動諮詢</button>
+      </aside>
+      {open && (
+        <div className="share-sheet" role="dialog" aria-modal="true" aria-label="分享燃點品牌設計" onClick={() => setOpen(false)}>
+          <div className="share-sheet-panel" onClick={(event) => event.stopPropagation()}>
+            <button className="share-sheet-close" type="button" onClick={() => setOpen(false)} aria-label="關閉分享面板">×</button>
+            <div className="share-preview-card">
+              <img src="assets/share-cover.jpg" alt="燃點品牌設計 IBD 分享封面" />
+              <div>
+                <span>H5 SHARE CARD</span>
+                <h3>{SITE_SHARE_TITLE}</h3>
+                <p>{SITE_SHARE_TEXT}</p>
+              </div>
+            </div>
+            <div className="share-copybox">
+              <b>推薦轉發文案</b>
+              <p>{SITE_SHARE_TEXT}</p>
+              <em>{url}</em>
+            </div>
+            <div className="share-actions">
+              <button type="button" onClick={() => shareSite("native")}>系統分享</button>
+              <button type="button" onClick={() => shareSite("whatsapp")}>WhatsApp</button>
+              <button type="button" onClick={() => shareSite("facebook")}>Facebook</button>
+              <button type="button" onClick={() => shareSite("x")}>X</button>
+              <button type="button" onClick={() => copyText(payload, "轉發文案與鏈接已複製，可粘貼到微信好友或朋友圈。")}>微信/朋友圈</button>
+              <button type="button" onClick={() => copyText(url, "網站鏈接已複製。")}>複製鏈接</button>
+            </div>
+            <div className="share-wechat-guide">
+              <img src={qr} alt="ip-design.hk 二維碼" />
+              <p>微信不能由普通網頁直接打開「發給好友 / 朋友圈」。在微信內打開時，請點右上角「…」分享；在其他瀏覽器中可先複製文案或掃二維碼。</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
 
 const LICENSE_CATEGORIES = [
   "潮玩 / 盲盒", "玩具 / 公仔", "文具 / 校園用品", "兒童服裝 / 配飾",
@@ -1296,4 +1389,4 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase }
   );
 };
 
-Object.assign(window, { Nav, Hero, Marquee, VideoSpotlight, About, Testimonials, Services, Methodology, Cases, CaseModal, VideoReelOverlay, NAV });
+Object.assign(window, { Nav, Hero, Marquee, VideoSpotlight, About, Testimonials, Services, Methodology, Cases, CaseModal, VideoReelOverlay, ShareDock, NAV });

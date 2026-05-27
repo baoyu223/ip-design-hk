@@ -701,6 +701,56 @@ footer .f-soc a:hover{color:var(--paper)}
   .f-locations{font-size:10px}
 }
 
+/* H5-style share dock: mobile first, quiet on desktop */
+.share-dock{position:fixed;right:18px;bottom:18px;z-index:120;display:grid;gap:8px;width:184px;padding:12px;border:1px solid var(--line-strong);border-radius:12px;background:color-mix(in srgb,var(--ink) 80%,transparent);color:var(--paper);box-shadow:0 18px 48px rgba(0,0,0,.28);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.share-dock div{display:grid;gap:4px;padding-bottom:4px}
+.share-dock span{font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;color:var(--mute)}
+.share-dock b{font-size:12px;line-height:1.35;color:var(--paper)}
+.share-dock button{width:100%;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb,var(--paper) 5%,transparent);color:var(--paper);padding:8px 10px;font-size:11px;letter-spacing:.06em;cursor:pointer}
+.share-dock button.hot{border-color:var(--accent);background:var(--accent);color:var(--ink);font-weight:800}
+.share-dock button:hover{border-color:var(--paper)}
+body.light .share-dock{background:rgba(255,255,255,.86);box-shadow:0 18px 48px rgba(0,0,0,.12)}
+body.light .share-dock button{background:#fff;color:#111;border-color:#ddd}
+body.light .share-dock button.hot{background:var(--accent);border-color:var(--accent)}
+.share-sheet{position:fixed;inset:0;z-index:180;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.58);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.share-sheet-panel{position:relative;width:min(520px,100%);max-height:calc(100svh - 36px);overflow:auto;border:1px solid var(--line-strong);border-radius:18px;background:var(--ink);color:var(--paper);box-shadow:0 30px 90px rgba(0,0,0,.42);padding:18px}
+.share-sheet-close{position:absolute;right:12px;top:12px;width:36px;height:36px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.08);color:var(--paper);font-size:24px;line-height:1;cursor:pointer}
+.share-preview-card{display:grid;grid-template-columns:132px 1fr;gap:14px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:12px;background:color-mix(in srgb,var(--paper) 4%,transparent)}
+.share-preview-card img{display:block;width:100%;aspect-ratio:1.2/1;border-radius:10px;object-fit:cover;background:#111}
+.share-preview-card span,.share-copybox b{font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;color:var(--accent)}
+.share-preview-card h3{font-family:var(--font-display);font-size:22px;line-height:1.08;margin:7px 0;color:var(--paper)}
+.share-preview-card p,.share-copybox p,.share-wechat-guide p{margin:0;color:var(--mute);font-size:13px;line-height:1.65}
+.share-copybox{display:grid;gap:8px;margin-top:14px;border:1px dashed var(--line-strong);border-radius:14px;padding:13px;background:color-mix(in srgb,var(--paper) 3%,transparent)}
+.share-copybox em{font-style:normal;color:var(--paper);font-size:12px;word-break:break-all}
+.share-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.share-actions button{border:1px solid var(--line-strong);border-radius:999px;background:color-mix(in srgb,var(--paper) 5%,transparent);color:var(--paper);padding:11px 10px;font-size:12px;cursor:pointer}
+.share-actions button:hover{border-color:var(--accent)}
+.share-wechat-guide{display:grid;grid-template-columns:92px 1fr;gap:12px;align-items:center;margin-top:14px;padding:12px;border-radius:14px;background:color-mix(in srgb,var(--accent) 8%,transparent);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent)}
+.share-wechat-guide img{display:block;width:92px;height:92px;border-radius:10px;background:#fff;padding:6px}
+body.light .share-sheet-panel{background:#fff;color:#111}
+body.light .share-preview-card,body.light .share-copybox{background:#f7f7f7;border-color:#e5e5e5}
+body.light .share-preview-card h3,body.light .share-copybox em{color:#111}
+body.light .share-actions button{background:#fff;color:#111;border-color:#ddd}
+@media (max-width:760px){
+  .share-dock{left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));width:auto;display:grid;grid-template-columns:1fr repeat(3,auto);align-items:center;gap:7px;padding:9px 10px;border-radius:999px;background:rgba(5,5,5,.76)}
+  .share-dock div{padding:0;min-width:0}
+  .share-dock span{display:none}
+  .share-dock b{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:28vw}
+  .share-dock button{width:auto;padding:8px 9px;font-size:10px;white-space:nowrap}
+  .share-sheet{align-items:end;padding:10px}
+  .share-sheet-panel{border-radius:20px;max-height:calc(100svh - 20px);padding:14px}
+  .share-preview-card{grid-template-columns:104px 1fr}
+  .share-preview-card h3{font-size:18px}
+  .share-actions{grid-template-columns:repeat(2,1fr)}
+  .share-wechat-guide{grid-template-columns:76px 1fr}
+  .share-wechat-guide img{width:76px;height:76px}
+}
+@media (max-width:420px){
+  .share-dock{grid-template-columns:1fr repeat(2,auto)}
+  .share-dock button:nth-of-type(2){display:none}
+  .share-dock b{max-width:42vw}
+}
+
 /* Utility */
 .divider{height:1px;background:var(--line);margin:0}
 .float-rev{animation:spin-rev 60s linear infinite}
