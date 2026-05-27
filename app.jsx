@@ -28,7 +28,7 @@ function App() {
   const openCaseDetail = (item, updateHash = true) => {
     setOpenCase(item);
     if (updateHash && item?._id) {
-      window.history.replaceState(null, "", `#case-${encodeURIComponent(item._id)}`);
+      window.history.replaceState(null, "", `?case=${encodeURIComponent(item._id)}#cases`);
     }
   };
 
@@ -42,8 +42,8 @@ function App() {
 
   const closeCaseDetail = () => {
     setOpenCase(null);
-    if (window.location.hash.startsWith("#case-")) {
-      window.history.replaceState(null, "", "#cases");
+    if (window.location.search.includes("case=") || window.location.hash.startsWith("#case-")) {
+      window.history.replaceState(null, "", window.location.pathname + "#cases");
     }
   };
 
@@ -112,8 +112,13 @@ function App() {
   React.useEffect(() => {
     if (!cases.length) return;
     const openFromHash = () => {
-      if (!window.location.hash.startsWith("#case-")) return;
-      const id = decodeURIComponent(window.location.hash.replace("#case-", ""));
+      const queryId = new URLSearchParams(window.location.search).get("case");
+      const hashId = window.location.hash.startsWith("#case-")
+        ? window.location.hash.replace("#case-", "")
+        : "";
+      const rawId = queryId || hashId;
+      if (!rawId) return;
+      const id = decodeURIComponent(rawId);
       const matched = cases.find(item => item._id === id);
       if (matched) {
         setOpenCase(matched);

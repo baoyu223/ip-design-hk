@@ -685,8 +685,8 @@ const renderPortableText = (blocks) => {
 };
 const getCaseShareUrl = (data) => {
   const base = window.location.origin + window.location.pathname;
-  const id = data._id ? `case-${encodeURIComponent(data._id)}` : "cases";
-  return `${base}#${id}`;
+  if (!data._id) return `${base}#cases`;
+  return `${base}?case=${encodeURIComponent(data._id)}`;
 };
 const shareCase = (data, channel) => {
   const title = getCaseTitle(data);
