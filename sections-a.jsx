@@ -292,21 +292,67 @@ const VideoHeat = ({ video }) => {
 const getVideoBarrage = (video = {}) => {
   const title = video.caseTitle || video.title || "這個 IP";
   const category = video.category || "IP";
-  const samples = [
-    `這個${category}角色很有記憶點`,
-    "視覺質感可以直接做成社交內容",
-    "如果延展成盲盒會很有話題",
-    "品牌情緒比單張海報更清楚",
-    "這條片很適合放招商簡報",
-    `想了解「${title}」授權合作`,
-    "這個 IP 可以授權做文具/公仔嗎？",
-    "角色表情和動作可以再延展一組",
-    "這種風格很適合線下快閃",
-    "有沒有非獨家品類授權方案？",
-  ];
   const key = `${video._id || ""}${video.url || ""}${title}`;
   const seed = Array.from(key).reduce((total, char) => total + char.charCodeAt(0), 0);
-  return [0, 1, 2, 3, 4].map((_, index) => samples[(seed + index * 3) % samples.length]);
+  const industries = ["食品包裝", "飲品包裝", "文具禮盒", "潮玩公仔", "兒童服裝", "文旅伴手禮", "玩具系列", "校園用品", "咖啡品牌", "快閃展覽", "美妝個護", "餐飲聯名", "戶外用品", "企業禮品", "數碼配件"];
+  const designNotes = [
+    `${category}的角色辨識度很清楚`,
+    "這個表情有被記住的可能",
+    "角色性格比單張視覺更完整",
+    "畫面很適合剪成短視頻物料",
+    "如果做成包裝系列會很有貨架感",
+    "這種動態很適合招商簡報",
+    "IP 的情緒點很容易被轉發",
+    "這個角色可以繼續做表情包",
+    "視覺很乾淨，但記憶點還在",
+    "品牌感和可愛感平衡得不錯",
+    "這條片能讓人快速理解角色",
+    "感覺可以延展出一整套周邊",
+    "故事感比普通形象設計更強",
+    "這個 IP 有線下打卡的潛力",
+    "角色如果出現在門店會很吸睛",
+  ];
+  const marketNotes = [
+    "這個方向比較容易做社交傳播",
+    "年輕客群應該會願意停留多看",
+    "放到小紅書首圖也有點擊慾",
+    "如果配合節日檔期會更好賣",
+    "這種畫面適合做品牌發布節奏",
+    "比單純 logo 視覺更有內容感",
+    "適合做新品上市的第一波記憶",
+    "可以用來做會員禮和聯名款",
+    "看起來有機會做成長期資產",
+    "如果配合門店陳列會更完整",
+  ];
+  const needs = industries.flatMap((industry) => [
+    `我們想開發${industry}IP，可以約聊嗎？`,
+    `${industry}想做一套角色視覺，大概怎麼開始？`,
+    `這個風格能不能延展到${industry}？`,
+    `如果做${industry}授權，合作方式怎麼算？`,
+    `想找你們做${industry}的品牌 IP 形象`,
+  ]);
+  const licensing = [
+    `想了解「${title}」產品授權合作`,
+    `「${title}」可以授權做周邊嗎？`,
+    "有沒有非獨家品類授權方案？",
+    "如果獨家買斷一個品類，需要怎麼談？",
+    "想拿 IP 做食品包裝聯名，可以先評估嗎？",
+    "授權合作會包含角色素材和使用規範嗎？",
+    "可以先做一個產品樣品授權測試嗎？",
+    "文具/公仔/禮盒這類授權適合嗎？",
+  ];
+  const pool = [...designNotes, ...marketNotes, ...needs];
+  const pick = (list, index) => list[(seed + index * 17 + index * index * 7) % list.length];
+  const selected = [
+    pick(pool, 1),
+    pick(pool, 2),
+    pick(licensing, 3),
+    pick(pool, 4),
+    pick(licensing, 5),
+    pick(pool, 6),
+    pick(pool, 7),
+  ];
+  return Array.from(new Set(selected)).slice(0, 6);
 };
 
 const VideoBarrage = ({ video, compact = false }) => (
