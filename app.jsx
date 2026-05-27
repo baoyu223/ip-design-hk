@@ -20,6 +20,7 @@ function App() {
   const [active, setActive] = React.useState("home");
   const [selectedTier, setSelectedTier] = React.useState(null);
   const [cases, setCases] = React.useState([]);
+  const [siteVideos, setSiteVideos] = React.useState([]);
   const [openCase, setOpenCase] = React.useState(null);
 
   const openCaseDetail = (item, updateHash = true) => {
@@ -85,26 +86,42 @@ function App() {
   React.useEffect(() => {
     const projectId = "6fxw2dmo";
     const dataset = "production";
-    const query = `*[_type == "case" && !(_id in path("drafts.**"))] | order(featured desc, year desc, _createdAt desc){
-      _id, title, description, category, year,
-      "image": image.asset->url,
-      size, featured,
-      client, services, tags, body, link,
-      "gallery": gallery[]{
-        "url": asset->url,
-        caption
+    const query = `{
+      "cases": *[_type == "case" && !(_id in path("drafts.**"))] | order(featured desc, year desc, _createdAt desc){
+        _id, title, description, category, year,
+        "image": image.asset->url,
+        size, featured,
+        client, services, tags, body, link,
+        "gallery": gallery[]{
+          "url": asset->url,
+          caption
+        },
+        "videos": videos[]{
+          title,
+          caption,
+          placement,
+          displayOrder,
+          "url": file.asset->url,
+          "filename": file.asset->originalFilename
+        },
+        "pdfs": pdfs[]{
+          title,
+          description,
+          "url": file.asset->url,
+          "filename": file.asset->originalFilename
+        }
       },
-      "videos": videos[]{
+      "siteVideos": *[_type == "siteVideo" && !(_id in path("drafts.**"))] | order(displayOrder asc, _createdAt desc){
+        _id,
         title,
         caption,
-        placement,
+        showOnHome,
+        showInTestimonials,
         displayOrder,
-        "url": file.asset->url,
-        "filename": file.asset->originalFilename
-      },
-      "pdfs": pdfs[]{
-        title,
-        description,
+        "caseId": relatedCase->_id,
+        "caseTitle": relatedCase->title,
+        "caseDescription": relatedCase->description,
+        "category": relatedCase->category,
         "url": file.asset->url,
         "filename": file.asset->originalFilename
       }
@@ -121,7 +138,7 @@ function App() {
           const response = await fetch(url, { cache: "no-store" });
           if (!response.ok) throw new Error(`Sanity responded ${response.status}`);
           const data = await response.json();
-          if (data && data.result && data.result.length > 0) return data;
+          if (data && data.result) return data;
         } catch (error) {
           lastError = error;
         }
@@ -130,8 +147,21 @@ function App() {
     };
     loadCases()
       .then(data => {
-        if (data && data.result && data.result.length > 0) {
-          setCases(data.result);
+        const result = data?.result || {};
+        const caseList = Array.isArray(result.cases) ? result.cases : [];
+        const videoList = Array.isArray(result.siteVideos) ? result.siteVideos.filter(video => video && video.url) : [];
+        setSiteVideos(videoList);
+        if (caseList.length > 0) {
+          const casesWithVideos = caseList.map(item => ({
+            ...item,
+            videos: [
+              ...(item.videos || []),
+              ...videoList
+                .filter(video => video.caseId === item._id)
+                .map(video => ({ ...video, placement: video.showInTestimonials ? "testimonial" : "caseOnly" })),
+            ],
+          }));
+          setCases(casesWithVideos);
         }
       })
       .catch(err => console.warn("Sanity 后台未连接或无内容，显示占位案例：", err));
@@ -189,9 +219,9 @@ function App() {
       <main>
         <Hero variant={t.heroVariant} />
         <Marquee />
-        <VideoSpotlight cases={cases} />
+        <VideoSpotlight cases={cases} siteVideos={siteVideos} />
         <About />
-        <Testimonials cases={cases} />
+        <Testimonials cases={cases} siteVideos={siteVideos} />
         <Services />
         <Methodology />
         <Cases cases={cases} onOpen={openCaseDetail} />

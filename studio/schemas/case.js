@@ -58,7 +58,8 @@ export default {
     { name: "body", title: "詳細描述", type: "array", of: [{ type: "block" }] },
     {
       name: "videos", title: "影片 / 視頻（可指定前台位置）", type: "array",
-      description: "先點「Add item」新增影片，再選擇它要顯示在首頁視頻板塊、客戶評價下方，或只在案例詳情顯示。",
+      description: "舊版案例內視頻字段，現在請改用左側「視頻管理」單獨上傳與指定展示位置。",
+      hidden: true,
       of: [
         {
           type: "object",

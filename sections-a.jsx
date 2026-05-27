@@ -259,9 +259,12 @@ const getVideosByPlacement = (cases = [], placement) => (
   collectCaseVideos(cases).filter(video => video.placement === placement)
 );
 
-const VideoSpotlight = ({ cases = [] }) => {
+const VideoSpotlight = ({ cases = [], siteVideos = [] }) => {
   const allVideos = collectCaseVideos(cases);
-  const lead = getVideosByPlacement(cases, "home")[0] || allVideos[0];
+  const homeVideos = (siteVideos || [])
+    .filter(video => video && video.url && video.showOnHome)
+    .sort((a, b) => (Number(a.displayOrder) || 999) - (Number(b.displayOrder) || 999));
+  const lead = homeVideos[0] || getVideosByPlacement(cases, "home")[0] || allVideos[0];
   if (!lead) return null;
   return (
     <section id="brand-film" className="video-spotlight" data-screen-label="02A Brand Film">
@@ -305,8 +308,13 @@ const TESTIMONIALS = [
   { avatar:"A", name:"Alice Ho", role:"聯名項目經理", brand:"跨界聯名", text:"他們會先找兩個品牌之間真正能成立的理由，再做視覺。這讓聯名不是硬拼在一起，而是有記憶點。" },
 ];
 
-const Testimonials = ({ cases = [] }) => {
-  const pickedVideos = getVideosByPlacement(cases, "testimonial");
+const Testimonials = ({ cases = [], siteVideos = [] }) => {
+  const pickedVideos = [
+    ...(siteVideos || [])
+      .filter(video => video && video.url && video.showInTestimonials)
+      .sort((a, b) => (Number(a.displayOrder) || 999) - (Number(b.displayOrder) || 999)),
+    ...getVideosByPlacement(cases, "testimonial"),
+  ];
   const videos = (pickedVideos.length ? pickedVideos : collectCaseVideos(cases).filter(video => video.placement !== "home").slice(0, 6)).slice(0, 6);
   return (
   <section id="testimonials" className="testimonials" data-screen-label="02B Testimonials">
