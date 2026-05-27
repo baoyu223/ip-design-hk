@@ -15,8 +15,46 @@ const FONT_OPTIONS = [
   { id:"space",   label:"Space Grotesk · 科技", stack:"'Space Grotesk', 'Noto Sans TC', sans-serif" },
 ];
 
+const LANG_OPTIONS = ["zh-hant", "zh-hans", "en"];
+const LANG_META = {
+  "zh-hant": {
+    htmlLang: "zh-Hant-HK",
+    locale: "zh_HK",
+    title: "燃點品牌設計 IBD｜燃点・Ignition Brand Design｜IP設計・潮玩設計・品牌全案",
+    description: "燃點品牌設計 IBD（燃点 / Ignition Brand Design）是香港 IP 品牌策劃設計工作室，提供 IPdesign、IP品牌設計、IP形象設計、文創IP設計、文旅IP、兒童服裝IP、文具IP設計、玩具IP設計、潮玩設計與品牌全案。",
+    keywords: "燃点,燃點,燃点品牌设计,燃點品牌設計,燃点品牌策划设计,燃點品牌策劃設計,ignition,Ignition,ignition brand design,Ignition Brand Design,IBD,IPdesign,IP Design,IP品牌設計,IP品牌设计,ip形象設計,ip形象设计,文創IP設計,文创IP设计,文旅IP,兒童服裝IP,儿童服装IP,文具IP設計,文具IP设计,玩具IP設計,玩具IP设计,潮玩設計,潮玩设计,品牌設計,品牌设计,品牌全案,品牌策劃,香港品牌設計公司",
+  },
+  "zh-hans": {
+    htmlLang: "zh-Hans-CN",
+    locale: "zh_CN",
+    title: "燃点品牌设计 IBD｜燃点・Ignition Brand Design｜IP设计・潮玩设计・品牌全案",
+    description: "燃点品牌设计 IBD 是香港 IP 品牌策划设计工作室，提供 IPdesign、IP品牌设计、IP形象设计、文创IP设计、文旅IP、儿童服装IP、文具IP设计、玩具IP设计、潮玩设计与品牌全案。",
+    keywords: "燃点,燃点品牌设计,燃点品牌策划设计,ignition,Ignition,ignition brand design,Ignition Brand Design,IBD,IPdesign,IP Design,IP品牌设计,ip形象设计,文创IP设计,文旅IP,儿童服装IP,文具IP设计,玩具IP设计,潮玩设计,品牌设计,品牌全案,品牌策划,香港品牌设计公司",
+  },
+  en: {
+    htmlLang: "en",
+    locale: "en_US",
+    title: "Ignition Brand Design IBD｜IP Design, Character IP & Brand Strategy Hong Kong",
+    description: "Ignition Brand Design IBD is a Hong Kong IP brand strategy and design studio for IP design, character IP, trend-toy design, cultural IP, packaging, visual identity and full brand systems.",
+    keywords: "Ignition Brand Design,IBD,IP design,IP brand design,character IP design,brand strategy Hong Kong,trend toy design,cultural IP design,packaging design,visual identity,brand design studio Hong Kong",
+  },
+};
+
+const getInitialLang = () => {
+  const queryLang = new URLSearchParams(window.location.search).get("lang");
+  if (LANG_OPTIONS.includes(queryLang)) return queryLang;
+  const savedLang = window.localStorage && window.localStorage.getItem("ibd-lang");
+  return LANG_OPTIONS.includes(savedLang) ? savedLang : "zh-hant";
+};
+
+const setMetaTag = (selector, attr, value) => {
+  const node = document.head.querySelector(selector);
+  if (node && value) node.setAttribute(attr, value);
+};
+
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [lang, setLang] = React.useState(getInitialLang);
   const [active, setActive] = React.useState("home");
   const [infoPage, setInfoPage] = React.useState(null);
   const [selectedTier, setSelectedTier] = React.useState(null);
@@ -28,7 +66,10 @@ function App() {
   const openCaseDetail = (item, updateHash = true) => {
     setOpenCase(item);
     if (updateHash && item?._id) {
-      window.history.replaceState(null, "", `?case=${encodeURIComponent(item._id)}#cases`);
+      const params = new URLSearchParams(window.location.search);
+      params.set("case", item._id);
+      const qs = params.toString();
+      window.history.replaceState(null, "", `${window.location.pathname}?${qs}#cases`);
     }
   };
 
@@ -43,9 +84,40 @@ function App() {
   const closeCaseDetail = () => {
     setOpenCase(null);
     if (window.location.search.includes("case=") || window.location.hash.startsWith("#case-")) {
-      window.history.replaceState(null, "", window.location.pathname + "#cases");
+      const params = new URLSearchParams(window.location.search);
+      params.delete("case");
+      const qs = params.toString();
+      window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}#cases`);
     }
   };
+
+  const changeLang = (nextLang) => {
+    if (!LANG_OPTIONS.includes(nextLang)) return;
+    setLang(nextLang);
+    window.localStorage && window.localStorage.setItem("ibd-lang", nextLang);
+    const params = new URLSearchParams(window.location.search);
+    if (nextLang === "zh-hant") params.delete("lang");
+    else params.set("lang", nextLang);
+    const qs = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash || ""}`);
+  };
+
+  React.useEffect(() => {
+    const meta = LANG_META[lang] || LANG_META["zh-hant"];
+    const url = `${window.location.origin}${window.location.pathname}${lang === "zh-hant" ? "" : `?lang=${lang}`}`;
+    document.documentElement.lang = meta.htmlLang;
+    document.body.dataset.lang = lang;
+    document.title = meta.title;
+    setMetaTag('meta[name="description"]', "content", meta.description);
+    setMetaTag('meta[name="keywords"]', "content", meta.keywords);
+    setMetaTag('meta[property="og:title"]', "content", meta.title);
+    setMetaTag('meta[property="og:description"]', "content", meta.description);
+    setMetaTag('meta[property="og:locale"]', "content", meta.locale);
+    setMetaTag('meta[property="og:url"]', "content", url);
+    setMetaTag('meta[name="twitter:title"]', "content", meta.title);
+    setMetaTag('meta[name="twitter:description"]', "content", meta.description);
+    setMetaTag('link[rel="canonical"]', "href", url);
+  }, [lang]);
 
   React.useEffect(() => {
     document.body.style.overflow = openCase ? "hidden" : "";
@@ -282,7 +354,7 @@ function App() {
     if (id !== "cases" && openCase) setOpenCase(null);
     setInfoPage(id === "services" || id === "method" ? id : null);
     setActive(id);
-    window.history.replaceState(null, "", `#${id}`);
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search || ""}#${id}`);
     window.requestAnimationFrame(() => {
       const el = document.getElementById(id);
       if (el) el.scrollIntoView({ behavior:"smooth", block:"start" });
@@ -319,17 +391,17 @@ function App() {
   return (
     <>
       <ShapeDefs />
-      <Nav active={active} onNav={onNav} theme={t.theme} onThemeToggle={() => setTweak("theme", t.theme === "light" ? "dark" : "light")} />
+      <Nav active={active} onNav={onNav} theme={t.theme} onThemeToggle={() => setTweak("theme", t.theme === "light" ? "dark" : "light")} lang={lang} onLangChange={changeLang} />
       <main>
-        <Hero variant={t.heroVariant} />
-        <Marquee />
-        <VideoSpotlight cases={cases} siteVideos={siteVideos} onOpenVideo={openVideoFeed} onOpenCase={openRelatedCase} />
-        <About />
-        <Testimonials cases={cases} siteVideos={siteVideos} onOpenVideo={openVideoFeed} onOpenCase={openRelatedCase} />
-        {infoPage === "services" && <Services />}
-        {infoPage === "method" && <Methodology />}
-        <Cases cases={cases} onOpen={openCaseDetail} />
-        <Clients />
+        <Hero variant={t.heroVariant} lang={lang} />
+        <Marquee lang={lang} />
+        <VideoSpotlight cases={cases} siteVideos={siteVideos} onOpenVideo={openVideoFeed} onOpenCase={openRelatedCase} lang={lang} />
+        <About lang={lang} />
+        <Testimonials cases={cases} siteVideos={siteVideos} onOpenVideo={openVideoFeed} onOpenCase={openRelatedCase} lang={lang} />
+        {infoPage === "services" && <Services lang={lang} />}
+        {infoPage === "method" && <Methodology lang={lang} />}
+        <Cases cases={cases} onOpen={openCaseDetail} lang={lang} />
+        <Clients lang={lang} />
         {openCase && (
           <CaseModal
             data={openCase}
@@ -338,14 +410,15 @@ function App() {
             onPrev={() => openCaseByOffset(-1)}
             onNext={() => openCaseByOffset(1)}
             canNavigate={cases.length > 1}
+            lang={lang}
           />
         )}
-        {videoFeed && <VideoReelOverlay videos={allPlayableVideos} initialIndex={videoFeed.index} onClose={() => setVideoFeed(null)} onOpenCase={openRelatedCase} />}
-        <Pricing onPick={setSelectedTier} />
-        <Contact selectedTier={selectedTier} onTierChange={setSelectedTier} />
+        {videoFeed && <VideoReelOverlay videos={allPlayableVideos} initialIndex={videoFeed.index} onClose={() => setVideoFeed(null)} onOpenCase={openRelatedCase} lang={lang} />}
+        <Pricing onPick={setSelectedTier} lang={lang} />
+        <Contact selectedTier={selectedTier} onTierChange={setSelectedTier} lang={lang} />
       </main>
-      <Footer />
-      <ShareDock onNav={onNav} />
+      <Footer lang={lang} />
+      <ShareDock onNav={onNav} lang={lang} />
 
       <TweaksPanel title="Tweaks · 燃點">
         <TweakSection label="主题模式" />

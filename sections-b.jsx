@@ -1,4 +1,9 @@
 // sections-b.jsx — Pricing, Contact, Footer
+const getBText = (lang, zhHant, zhHans, en) => {
+  if (lang === "en") return en;
+  if (lang === "zh-hans") return zhHans;
+  return zhHant;
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PRICING
@@ -56,14 +61,14 @@ const TIERS = [
   },
 ];
 
-const Pricing = ({ onPick }) => (
+const Pricing = ({ onPick, lang = "zh-hant" }) => (
   <section id="pricing" data-screen-label="06 Pricing">
     <div className="shell">
       <div className="sec-eyebrow">
-        <span className="num">06 / 07</span><span>服務階梯  ·  PRICING TIERS</span><span className="line"/>
+        <span className="num">06 / 07</span><span>{getBText(lang, "服務階梯  ·  PRICING TIERS", "服务阶梯  ·  PRICING TIERS", "PROJECT PATHS")}</span><span className="line"/>
       </div>
-      <h2 className="sec-title">不是買一張圖。<br/>是啟動一套<span className="accent">生長系統</span>。</h2>
-      <p className="sec-sub">從品牌診斷、IP 資產化到長期共創，讓每一次設計投入都能沉澱為可展示、可延展、可轉化的品牌資產。</p>
+      <h2 className="sec-title">{getBText(lang, "不是買一張圖。", "不是买一张图。", "Not just a picture.")}<br/>{getBText(lang, "是啟動一套", "是启动一套", "It starts a ")}<span className="accent">{getBText(lang, "生長系統", "生长系统", "growth system")}</span>{lang === "en" ? "." : "。"}</h2>
+      <p className="sec-sub">{getBText(lang, "從品牌診斷、IP 資產化到長期共創，讓每一次設計投入都能沉澱為可展示、可延展、可轉化的品牌資產。", "从品牌诊断、IP资产化到长期共创，让每一次设计投入沉淀为可展示、可延展、可转化的品牌资产。", "From brand diagnosis to IP systems and long-term collaboration, we turn design investment into assets that can be shown, extended and commercialized.")}</p>
 
       <div className="price-grid">
         {TIERS.map((t,i) => (
@@ -80,7 +85,7 @@ const Pricing = ({ onPick }) => (
             <ul>{t.items.map(it => <li key={it}>{it}</li>)}</ul>
             <div className="tier-cta">
               <a href="#contact" className="tier-btn" onClick={(e)=>{e.preventDefault(); onPick && onPick(t.h); document.getElementById("contact").scrollIntoView({behavior:"smooth", block:"start"})}}>
-                開始討論 <span>→</span>
+                {getBText(lang, "開始討論", "开始讨论", "Start discussion")} <span>→</span>
               </a>
             </div>
           </div>
@@ -93,7 +98,7 @@ const Pricing = ({ onPick }) => (
 // ─────────────────────────────────────────────────────────────────────────────
 // CONTACT
 // ─────────────────────────────────────────────────────────────────────────────
-const Contact = ({ selectedTier, onTierChange }) => {
+const Contact = ({ selectedTier, onTierChange, lang = "zh-hant" }) => {
   const [submitted, setSubmitted] = React.useState(false);
   const [submitState, setSubmitState] = React.useState("idle");
   const tiers = ["輕量啟動", "全案資產", "戰略陪跑", "待議"];
@@ -136,13 +141,13 @@ const Contact = ({ selectedTier, onTierChange }) => {
     <section id="contact" data-screen-label="07 Contact">
       <div className="shell">
         <div className="sec-eyebrow">
-          <span className="num">07 / 07</span><span>聯繫我們  ·  GET IN TOUCH</span><span className="line"/>
+          <span className="num">07 / 07</span><span>{getBText(lang, "聯繫我們  ·  GET IN TOUCH", "联系我们  ·  GET IN TOUCH", "GET IN TOUCH")}</span><span className="line"/>
         </div>
         <div className="contact-grid">
           <div>
-            <h2 className="contact-big">點燃對話，<br/>從一杯咖啡<br/>開始。<Sparkle size={42} color="var(--accent)" style={{verticalAlign:"middle", marginLeft:8}}/></h2>
+            <h2 className="contact-big">{getBText(lang, "點燃對話，", "点燃对话，", "Start the conversation,")}<br/>{getBText(lang, "從一杯咖啡", "从一杯咖啡", "over a cup")}<br/>{getBText(lang, "開始。", "开始。", "of coffee.")}<Sparkle size={42} color="var(--accent)" style={{verticalAlign:"middle", marginLeft:8}}/></h2>
             <p style={{ color:"var(--mute)", fontSize:15, lineHeight:1.65, maxWidth:"42ch", marginTop:24 }}>
-              告訴我們你的品牌、痛點、預期。我們會在 48 小時內回覆一份初步診斷，並判斷是否進入正式立項。
+              {getBText(lang, "告訴我們你的品牌、痛點、預期。我們會在 48 小時內回覆一份初步診斷，並判斷是否進入正式立項。", "告诉我们你的品牌、痛点和预期。我们会在 48 小时内回复一份初步诊断，并判断是否进入正式立项。", "Tell us about your brand, challenge and ambition. We will reply within 48 hours with an initial diagnosis and next-step suggestion.")}
             </p>
             <div className="contact-meta">
               <div className="row">
@@ -214,7 +219,7 @@ const Contact = ({ selectedTier, onTierChange }) => {
                   <textarea name="brief" placeholder="簡單說說你的品牌背景、想解決的問題、希望達成的效果" rows={3} required />
                 </div>
                 <button type="submit" className="submit" disabled={submitState === "sending"}>
-                  {submitState === "sending" ? "正在提交..." : "馬上開啟你的品牌 IP"} <span className="arr">→</span>
+                  {submitState === "sending" ? getBText(lang, "正在提交...", "正在提交...", "Sending...") : getBText(lang, "馬上開啟你的品牌 IP", "马上开启你的品牌 IP", "Ignite your brand IP")} <span className="arr">→</span>
                 </button>
                 {submitState === "error" && (
                   <p className="form-error">提交暫時未成功，請稍後再試，或直接 WhatsApp 我們：+852 6948 6199。</p>
@@ -231,11 +236,11 @@ const Contact = ({ selectedTier, onTierChange }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // FOOTER
 // ─────────────────────────────────────────────────────────────────────────────
-const Footer = () => (
+const Footer = ({ lang = "zh-hant" }) => (
   <footer>
     <div className="shell footer-inner">
       <div className="footer-main">
-        <div className="f-brand">IBD<span className="star"> ✦ </span>燃點品牌設計</div>
+        <div className="f-brand">IBD<span className="star"> ✦ </span>{getBText(lang, "燃點品牌設計", "燃点品牌设计", "Ignition Brand Design")}</div>
         <div className="f-copy">© 2026 Ignition Brand Design Ltd. All rights reserved.</div>
       </div>
       <div className="f-soc">
@@ -288,14 +293,14 @@ const CLIENTS = [
   { n:"POPO 麵包",           en:"POPO Bakery",                cat:"FILE / F&B"     },
 ];
 
-const Clients = () => (
+const Clients = ({ lang = "zh-hant" }) => (
   <section id="clients" data-screen-label="05 Clients">
     <div className="shell">
       <div className="sec-eyebrow">
-        <span className="num">04 / 07</span><span>服務客戶  ·  TRUSTED BY</span><span className="line"/>
+        <span className="num">04 / 07</span><span>{getBText(lang, "服務客戶  ·  TRUSTED BY", "服务客户  ·  TRUSTED BY", "TRUSTED BY")}</span><span className="line"/>
       </div>
-      <h2 className="sec-title">三十餘家品牌，<br/>共同的<span className="accent">起爆點</span>。</h2>
-      <p className="sec-sub">從博物館、央企、上市集團，到新銳消費品牌與兒童 IP — 我們的客戶橫跨體育、教育、零售、餐飲、文化與科技。</p>
+      <h2 className="sec-title">{getBText(lang, "三十餘家品牌，", "三十余家品牌，", "30+ brands,")}<br/>{getBText(lang, "共同的", "共同的", "one shared ")}<span className="accent">{getBText(lang, "起爆點", "起爆点", "ignition point")}</span>{lang === "en" ? "." : "。"}</h2>
+      <p className="sec-sub">{getBText(lang, "從博物館、央企、上市集團，到新銳消費品牌與兒童 IP — 我們的客戶橫跨體育、教育、零售、餐飲、文化與科技。", "从博物馆、央企、上市集团，到新锐消费品牌与儿童 IP，我们的客户横跨体育、教育、零售、餐饮、文化与科技。", "From museums and listed groups to consumer brands and children’s IP, our clients span sport, education, retail, F&B, culture and technology.")}</p>
 
       <div className="client-wall">
         {CLIENTS.map((c,i) => (

@@ -49,6 +49,12 @@ body.light .nav-logo-dark{display:block}
 .nav-cta:hover{background:var(--paper);color:var(--ink);border-color:var(--paper)}
 .nav-cta .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
 .nav-actions{display:flex;align-items:center;gap:10px}
+.lang-switch{display:inline-flex;align-items:center;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb,var(--paper) 4%,transparent)}
+.lang-switch button{border:0;background:transparent;color:var(--paper);border-radius:999px;padding:6px 8px;font-size:11px;line-height:1;letter-spacing:.02em;cursor:pointer;opacity:.62}
+.lang-switch button.on{background:var(--paper);color:var(--ink);opacity:1}
+body.light .lang-switch{background:rgba(0,0,0,.03)}
+body.light .lang-switch button{color:var(--ink)}
+body.light .lang-switch button.on{background:var(--ink);color:var(--paper)}
 .theme-toggle{width:40px;height:40px;border:1px solid var(--line-strong);border-radius:999px;background:transparent;color:var(--paper);display:grid;place-items:center;cursor:pointer;transition:background .25s,color .25s,border-color .25s}
 .theme-toggle span{font-family:var(--font-display);font-size:12px;font-weight:800;letter-spacing:.08em}
 .theme-toggle:hover{background:var(--paper);color:var(--ink);border-color:var(--paper)}
@@ -60,6 +66,8 @@ body.light .nav-logo-dark{display:block}
   .nav-links a.active::after{display:none}
   .nav-brand span:last-child{display:none}
   .nav-actions{gap:8px}
+  .lang-switch{padding:2px}
+  .lang-switch button{padding:5px 6px;font-size:10px}
   .nav-cta{display:inline-flex;padding:8px 10px;font-size:11px;letter-spacing:.04em;white-space:nowrap;background:var(--accent);color:var(--ink);border-color:var(--accent)}
   .nav-cta .dot{display:none}
   .theme-toggle{width:34px;height:34px}

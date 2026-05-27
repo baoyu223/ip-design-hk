@@ -1,20 +1,100 @@
 // sections.jsx — page sections for Ignition Brand Design
 
 const NAV = [
-  { id: "home",     label: "首頁",       en: "HOME" },
-  { id: "about",    label: "關於我們",   en: "ABOUT" },
-  { id: "services", label: "主營業務",   en: "SERVICES" },
-  { id: "method",   label: "設計方法論", en: "METHOD" },
-  { id: "clients",  label: "服務客戶",   en: "CLIENTS" },
-  { id: "cases",    label: "服務案例",   en: "WORK" },
-  { id: "pricing",  label: "服務階梯",   en: "PRICING" },
-  { id: "contact",  label: "聯繫我們",   en: "CONTACT" },
+  { id: "home",     zhHant: "首頁",       zhHans: "首页",       en: "HOME" },
+  { id: "about",    zhHant: "關於我們",   zhHans: "关于我们",   en: "ABOUT" },
+  { id: "services", zhHant: "主營業務",   zhHans: "主营业务",   en: "SERVICES" },
+  { id: "method",   zhHant: "設計方法論", zhHans: "设计方法论", en: "METHOD" },
+  { id: "clients",  zhHant: "服務客戶",   zhHans: "服务客户",   en: "CLIENTS" },
+  { id: "cases",    zhHant: "服務案例",   zhHans: "服务案例",   en: "WORK" },
+  { id: "pricing",  zhHant: "服務階梯",   zhHans: "服务阶梯",   en: "PRICING" },
+  { id: "contact",  zhHant: "聯繫我們",   zhHans: "联系我们",   en: "CONTACT" },
 ];
+
+const I18N_TEXT = {
+  "zh-hant": {
+    navBrand: "燃點品牌設計",
+    navCta: "啟動項目",
+    themeDark: "黑",
+    themeLight: "白",
+    heroScene: "超級IP品牌策劃設計",
+    heroSceneSub: "IP Brand Strategy & Design",
+    heroGreeting: "Hi，讓品牌被看見，也被記住。",
+    heroTag: "以 A.I. 邏輯，點燃品牌生命",
+    aboutEyebrow: "關於我們  ·  ABOUT",
+    aboutTitleA: "設計即",
+    aboutTitleB: "資產",
+    aboutTitleC: "。不是裝飾，是火種。",
+    aboutBody: "燃點是植根香港的高端視覺實驗室。我們不做廉價的「平面美化」——十五年以上設計沉澱，被我們重塑為一套可被商業驗證的方法：將品牌基因解碼成「超級 IP」，讓 IP 以潮玩規格進入產品線、進入聯名、進入盲盒、進入 Z 世代的私域。",
+    aboutBody2: "一個沒有故事的形象，是空殼。一個沒有商業閉環的 IP，是擺設。我們交付的，是品牌可長期持有的資產。",
+    shareDockTitle: "把燃點轉給品牌負責人",
+    shareOpen: "打開分享卡",
+    shareSystem: "系統分享",
+    shareConsult: "啟動諮詢",
+    shareCard: "推薦轉發文案",
+    shareWechat: "微信/朋友圈",
+    copyLink: "複製鏈接",
+    shareWechatGuide: "微信不能由普通網頁直接打開「發給好友 / 朋友圈」。在微信內打開時，請點右上角「…」分享；在其他瀏覽器中可先複製文案或掃二維碼。",
+  },
+  "zh-hans": {
+    navBrand: "燃点品牌设计",
+    navCta: "启动项目",
+    themeDark: "黑",
+    themeLight: "白",
+    heroScene: "超级IP品牌策划设计",
+    heroSceneSub: "IP Brand Strategy & Design",
+    heroGreeting: "Hi，让品牌被看见，也被记住。",
+    heroTag: "以 A.I. 逻辑，点燃品牌生命",
+    aboutEyebrow: "关于我们  ·  ABOUT",
+    aboutTitleA: "设计即",
+    aboutTitleB: "资产",
+    aboutTitleC: "。不是装饰，是火种。",
+    aboutBody: "燃点是植根香港的高端视觉实验室。我们不做廉价的“平面美化”，而是把十五年以上设计沉淀，重塑为一套可被商业验证的方法：将品牌基因解码成“超级 IP”，让 IP 进入产品线、联名、盲盒与年轻消费场景。",
+    aboutBody2: "一个没有故事的形象，是空壳。一个没有商业闭环的 IP，是摆设。我们交付的，是品牌可长期持有的资产。",
+    shareDockTitle: "把燃点转给品牌负责人",
+    shareOpen: "打开分享卡",
+    shareSystem: "系统分享",
+    shareConsult: "启动咨询",
+    shareCard: "推荐转发文案",
+    shareWechat: "微信/朋友圈",
+    copyLink: "复制链接",
+    shareWechatGuide: "微信不能由普通网页直接打开“发给好友 / 朋友圈”。在微信内打开时，请点右上角“…”分享；在其他浏览器中可先复制文案或扫二维码。",
+  },
+  en: {
+    navBrand: "Ignition Brand Design",
+    navCta: "Start Project",
+    themeDark: "Dark",
+    themeLight: "Light",
+    heroScene: "Super IP Brand Strategy & Design",
+    heroSceneSub: "Character IP · Brand System · Licensing",
+    heroGreeting: "Hi, make your brand seen and remembered.",
+    heroTag: "Igniting brand life with strategy, design and IP logic",
+    aboutEyebrow: "ABOUT US",
+    aboutTitleA: "Design is an ",
+    aboutTitleB: "asset",
+    aboutTitleC: ". Not decoration, but ignition.",
+    aboutBody: "Ignition is a Hong Kong based visual lab. We turn brand DNA into character IP, visual systems, packaging worlds and commercial assets that can live across products, content, collaborations and licensing.",
+    aboutBody2: "A character without story is empty. An IP without commercial structure is decoration. We build assets that brands can keep growing.",
+    shareDockTitle: "Share IBD with your brand team",
+    shareOpen: "Open Card",
+    shareSystem: "Share",
+    shareConsult: "Start Brief",
+    shareCard: "Suggested sharing copy",
+    shareWechat: "WeChat",
+    copyLink: "Copy link",
+    shareWechatGuide: "Regular web pages cannot directly open WeChat friend or Moments sharing. Open this page inside WeChat and use the top-right menu, or copy the text and QR code.",
+  },
+};
+
+const getUiLang = (lang) => I18N_TEXT[lang] ? lang : "zh-hant";
+const tt = (lang, key) => I18N_TEXT[getUiLang(lang)][key] || I18N_TEXT["zh-hant"][key] || key;
+const navLabel = (item, lang) => lang === "en" ? item.en : (lang === "zh-hans" ? item.zhHans : item.zhHant);
+window.IBD_I18N = { tt, navLabel };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // NAV
 // ─────────────────────────────────────────────────────────────────────────────
-const Nav = ({ active, onNav, theme = "dark", onThemeToggle }) => (
+const Nav = ({ active, onNav, theme = "dark", onThemeToggle, lang = "zh-hant", onLangChange }) => (
   <header className="nav">
     <div className="nav-inner">
       <a className="nav-brand" href="#home" onClick={(e)=>{e.preventDefault();onNav("home")}}>
@@ -23,20 +103,25 @@ const Nav = ({ active, onNav, theme = "dark", onThemeToggle }) => (
           <img className="nav-logo nav-logo-dark" src="assets/brand-logo-black-alpha.png" alt="燃點" />
         </span>
         <span>IBD</span>
-        <span style={{ opacity:.55, marginLeft:6 }}>燃點品牌設計</span>
+        <span style={{ opacity:.55, marginLeft:6 }}>{tt(lang, "navBrand")}</span>
       </a>
       <nav className="nav-links">
         {NAV.slice(1, 8).map(n => (
           <a key={n.id} href={`#${n.id}`} className={active === n.id ? "active" : ""}
-             onClick={(e)=>{e.preventDefault(); onNav(n.id)}}>{n.label}</a>
+             onClick={(e)=>{e.preventDefault(); onNav(n.id)}}>{navLabel(n, lang)}</a>
         ))}
       </nav>
       <div className="nav-actions">
+        <div className="lang-switch" aria-label="Language">
+          <button type="button" className={lang === "zh-hant" ? "on" : ""} onClick={() => onLangChange && onLangChange("zh-hant")}>繁</button>
+          <button type="button" className={lang === "zh-hans" ? "on" : ""} onClick={() => onLangChange && onLangChange("zh-hans")}>简</button>
+          <button type="button" className={lang === "en" ? "on" : ""} onClick={() => onLangChange && onLangChange("en")}>EN</button>
+        </div>
         <a className="nav-cta" href="#contact" onClick={(e)=>{e.preventDefault();onNav("contact")}}>
-          <span className="dot"></span>啟動項目
+          <span className="dot"></span>{tt(lang, "navCta")}
         </a>
         <button className="theme-toggle" type="button" onClick={onThemeToggle} aria-label="切換黑白風格">
-          <span>{theme === "light" ? "白" : "黑"}</span>
+          <span>{theme === "light" ? tt(lang, "themeLight") : tt(lang, "themeDark")}</span>
         </button>
       </div>
     </div>
@@ -83,11 +168,11 @@ const HERO_IPS = [
   { src: "assets/ip-scene-pink.png", name: "商業轉化" },
 ];
 
-const HeroIPScene = () => (
+const HeroIPScene = ({ lang = "zh-hant" }) => (
   <div className="hero-ip-scene" aria-label="IP品牌策劃設計角色場景">
     <div className="ip-scene-title">
-      <span>超級IP品牌策劃設計</span>
-      <small>IP Brand Strategy & Design</small>
+      <span>{tt(lang, "heroScene")}</span>
+      <small>{tt(lang, "heroSceneSub")}</small>
     </div>
     <div className="ip-scene-deck">
     {HERO_IPS.map((ip, i) => (
@@ -98,7 +183,7 @@ const HeroIPScene = () => (
     ))}
     </div>
     <div className="ip-scene-greeting">
-      <span>Hi，讓品牌被看見，也被記住。</span>
+      <span>{tt(lang, "heroGreeting")}</span>
     </div>
   </div>
 );
@@ -135,7 +220,7 @@ const HeroBarrage = () => (
   </div>
 );
 
-const Hero = ({ variant = "sunburst" }) => (
+const Hero = ({ variant = "sunburst", lang = "zh-hant" }) => (
   <section id="home" className="hero" data-screen-label="01 Hero">
     {/* corner service tags echoing poster */}
     <div className="hero-tags">
@@ -150,7 +235,7 @@ const Hero = ({ variant = "sunburst" }) => (
         <Sunburst className="sun" color="var(--paper)" />
         <div className="tech-field"></div>
         <HeroClientOrbit />
-        <HeroIPScene />
+        <HeroIPScene lang={lang} />
       </div>
     )}
     {variant === "minimal" && (
@@ -175,7 +260,7 @@ const Hero = ({ variant = "sunburst" }) => (
           <Sparkle size={64} color="var(--accent)" className="sparkle" />
         </div>
         <div className="hero-sub-en">IGNITION&nbsp;&nbsp;BRAND&nbsp;&nbsp;DESIGN</div>
-        <div className="hero-tag">以 A.I. 邏輯，點燃品牌生命</div>
+        <div className="hero-tag">{tt(lang, "heroTag")}</div>
       </div>
     </div>
 
@@ -232,23 +317,20 @@ const Marquee = () => {
 // ─────────────────────────────────────────────────────────────────────────────
 // ABOUT
 // ─────────────────────────────────────────────────────────────────────────────
-const About = () => (
+const About = ({ lang = "zh-hant" }) => (
   <section id="about" data-screen-label="02 About">
     <div className="shell">
       <div className="sec-eyebrow">
         <span className="num">01 / 07</span>
-        <span>關於我們  ·  ABOUT</span>
+        <span>{tt(lang, "aboutEyebrow")}</span>
         <span className="line"/>
       </div>
-      <h2 className="sec-title">設計即<span className="accent">資產</span>。<br/>不是裝飾，是火種。</h2>
+      <h2 className="sec-title">{tt(lang, "aboutTitleA")}<span className="accent">{tt(lang, "aboutTitleB")}</span><br/>{tt(lang, "aboutTitleC")}</h2>
       <div className="about-grid">
         <div className="about-manifesto">
-          燃點是植根香港的高端視覺實驗室。我們不做廉價的「平面美化」——
-          <span className="accent">十五年以上設計沉澱</span>，被我們重塑為一套可被商業驗證的方法：
-          將品牌基因解碼成「超級 IP」，讓 IP 以潮玩規格進入產品線、進入聯名、進入盲盒、進入 Z 世代的私域。
+          {tt(lang, "aboutBody")}
           <br/><br/>
-          一個沒有故事的形象，是空殼。一個沒有商業閉環的 IP，是擺設。
-          我們交付的，是品牌可長期持有的<span className="accent">資產</span>。
+          {tt(lang, "aboutBody2")}
           <p className="about-en">
             Ignition is a Hong Kong based visual lab turning brand DNA into lasting commercial assets. We build identities, IP systems and packaging worlds that can live across products, collaborations, content and culture.
           </p>
@@ -760,6 +842,20 @@ const getCaseShareUrl = (data) => {
 const getSiteShareUrl = () => `${window.location.origin}${window.location.pathname}`;
 const SITE_SHARE_TITLE = "燃點品牌設計 IBD｜IP品牌策劃設計";
 const SITE_SHARE_TEXT = "香港 IP 品牌策劃設計工作室：IP設計、IP形象設計、潮玩設計、品牌全案與 IP 授權轉化。";
+const SITE_SHARE_BY_LANG = {
+  "zh-hant": {
+    title: SITE_SHARE_TITLE,
+    text: SITE_SHARE_TEXT,
+  },
+  "zh-hans": {
+    title: "燃点品牌设计 IBD｜IP品牌策划设计",
+    text: "香港 IP 品牌策划设计工作室：IP设计、IP形象设计、潮玩设计、品牌全案与 IP 授权转化。",
+  },
+  en: {
+    title: "Ignition Brand Design IBD｜IP Brand Strategy & Character Design",
+    text: "Hong Kong IP brand strategy and design studio for character IP, trend-toy design, brand systems, packaging and licensing.",
+  },
+};
 const copyText = (value, doneText = "鏈接已複製。") => {
   if (navigator.clipboard) {
     navigator.clipboard.writeText(value).then(() => window.alert(doneText)).catch(() => window.prompt("複製以下內容：", value));
@@ -767,9 +863,10 @@ const copyText = (value, doneText = "鏈接已複製。") => {
     window.prompt("複製以下內容：", value);
   }
 };
-const shareSite = (channel) => {
-  const title = SITE_SHARE_TITLE;
-  const text = SITE_SHARE_TEXT;
+const shareSite = (channel, lang = "zh-hant") => {
+  const copy = SITE_SHARE_BY_LANG[getUiLang(lang)] || SITE_SHARE_BY_LANG["zh-hant"];
+  const title = copy.title;
+  const text = copy.text;
   const url = getSiteShareUrl();
 
   if (channel === "wechat" || channel === "copy") {
@@ -843,21 +940,22 @@ const SHARE_OPTIONS = [
   { id: "x", label: "X", icon: "x" },
 ];
 
-const ShareDock = ({ onNav }) => {
+const ShareDock = ({ onNav, lang = "zh-hant" }) => {
   const [open, setOpen] = React.useState(false);
+  const copy = SITE_SHARE_BY_LANG[getUiLang(lang)] || SITE_SHARE_BY_LANG["zh-hant"];
   const url = getSiteShareUrl();
-  const payload = `${SITE_SHARE_TITLE}\n${SITE_SHARE_TEXT}\n${url}`;
+  const payload = `${copy.title}\n${copy.text}\n${url}`;
   const qr = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encodeURIComponent(url)}`;
   return (
     <>
       <aside className="share-dock" aria-label="H5 傳播快捷操作">
         <div>
           <span>H5 SHARE</span>
-          <b>把燃點轉給品牌負責人</b>
+          <b>{tt(lang, "shareDockTitle")}</b>
         </div>
-        <button type="button" onClick={() => setOpen(true)}>打開分享卡</button>
-        <button type="button" onClick={() => shareSite("native")}>系統分享</button>
-        <button type="button" className="hot" onClick={() => onNav && onNav("contact")}>啟動諮詢</button>
+        <button type="button" onClick={() => setOpen(true)}>{tt(lang, "shareOpen")}</button>
+        <button type="button" onClick={() => shareSite("native", lang)}>{tt(lang, "shareSystem")}</button>
+        <button type="button" className="hot" onClick={() => onNav && onNav("contact")}>{tt(lang, "shareConsult")}</button>
       </aside>
       {open && (
         <div className="share-sheet" role="dialog" aria-modal="true" aria-label="分享燃點品牌設計" onClick={() => setOpen(false)}>
@@ -867,26 +965,26 @@ const ShareDock = ({ onNav }) => {
               <img src="assets/share-cover.jpg" alt="燃點品牌設計 IBD 分享封面" />
               <div>
                 <span>H5 SHARE CARD</span>
-                <h3>{SITE_SHARE_TITLE}</h3>
-                <p>{SITE_SHARE_TEXT}</p>
+                <h3>{copy.title}</h3>
+                <p>{copy.text}</p>
               </div>
             </div>
             <div className="share-copybox">
-              <b>推薦轉發文案</b>
-              <p>{SITE_SHARE_TEXT}</p>
+              <b>{tt(lang, "shareCard")}</b>
+              <p>{copy.text}</p>
               <em>{url}</em>
             </div>
             <div className="share-actions">
-              <button type="button" onClick={() => shareSite("native")}>系統分享</button>
-              <button type="button" onClick={() => shareSite("whatsapp")}>WhatsApp</button>
-              <button type="button" onClick={() => shareSite("facebook")}>Facebook</button>
-              <button type="button" onClick={() => shareSite("x")}>X</button>
-              <button type="button" onClick={() => copyText(payload, "轉發文案與鏈接已複製，可粘貼到微信好友或朋友圈。")}>微信/朋友圈</button>
-              <button type="button" onClick={() => copyText(url, "網站鏈接已複製。")}>複製鏈接</button>
+              <button type="button" onClick={() => shareSite("native", lang)}>{tt(lang, "shareSystem")}</button>
+              <button type="button" onClick={() => shareSite("whatsapp", lang)}>WhatsApp</button>
+              <button type="button" onClick={() => shareSite("facebook", lang)}>Facebook</button>
+              <button type="button" onClick={() => shareSite("x", lang)}>X</button>
+              <button type="button" onClick={() => copyText(payload, "轉發文案與鏈接已複製，可粘貼到微信好友或朋友圈。")}>{tt(lang, "shareWechat")}</button>
+              <button type="button" onClick={() => copyText(url, "網站鏈接已複製。")}>{tt(lang, "copyLink")}</button>
             </div>
             <div className="share-wechat-guide">
               <img src={qr} alt="ip-design.hk 二維碼" />
-              <p>微信不能由普通網頁直接打開「發給好友 / 朋友圈」。在微信內打開時，請點右上角「…」分享；在其他瀏覽器中可先複製文案或掃二維碼。</p>
+              <p>{tt(lang, "shareWechatGuide")}</p>
             </div>
           </div>
         </div>
