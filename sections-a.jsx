@@ -408,10 +408,43 @@ const VideoThumb = ({ video, label = "播放視頻" }) => (
       <b>系列視頻</b>
       <em>點開連續觀看</em>
     </span>
+    <span className="video-thumb-license">
+      <b>IP 授權</b>
+      <em>可聯名 · 可開發周邊 · 可品類授權</em>
+    </span>
     <VideoHeat video={video} />
     <span className="video-play" aria-hidden="true"></span>
   </div>
 );
+
+const VideoSeriesPreview = ({ video }) => {
+  const series = Array.isArray(video?.seriesVideos) ? video.seriesVideos.filter(item => item && (item.url || item.poster)) : [];
+  if (!series.length) return null;
+  const previews = series.slice(0, 3);
+  return (
+    <div className="video-series-preview" aria-label={`這條視頻包含 ${series.length + 1} 條系列內容`}>
+      <div className="video-series-copy">
+        <b>系列內容</b>
+        <span>主片 + {series.length} 集，點開連續觀看</span>
+      </div>
+      <div className="video-series-thumbs">
+        {previews.map((item, index) => (
+          <span className="video-series-thumb" key={`${item.url || item.poster}-${index}`}>
+            {item.poster ? (
+              <img src={item.poster} alt={item.title || `系列視頻 ${index + 1}`} loading="lazy" />
+            ) : (
+              <video src={getVideoPreviewSrc(item.url)} muted playsInline preload="metadata" />
+            )}
+            <em>{String(index + 1).padStart(2, "0")}</em>
+          </span>
+        ))}
+        {series.length > previews.length && (
+          <span className="video-series-more">+{series.length - previews.length}</span>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const VideoSpotlight = ({ cases = [], siteVideos = [], onOpenVideo, onOpenCase }) => {
   const allVideos = collectCaseVideos(cases);
@@ -448,6 +481,7 @@ const VideoSpotlight = ({ cases = [], siteVideos = [], onOpenVideo, onOpenCase }
                   <strong>{video.title || video.caseTitle || `IP 動態作品 ${i + 1}`}</strong>
                   <span>{video.caption || video.filename || "作品視頻"}</span>
                 </figcaption>
+                <VideoSeriesPreview video={video} />
                 {(video.caseTitle || video.caseId) && (
                   <div className="video-case-link" onClick={(event) => { event.stopPropagation(); onOpenCase && onOpenCase(video); }}>
                     <span>對應作品案例</span>
