@@ -89,7 +89,7 @@ function App() {
       _id, title, description, category, year,
       "image": image.asset->url,
       size, featured,
-      client, services, body, link,
+      client, services, tags, body, link,
       "gallery": gallery[]{
         "url": asset->url,
         caption
@@ -97,6 +97,8 @@ function App() {
       "videos": videos[]{
         title,
         caption,
+        placement,
+        displayOrder,
         "url": file.asset->url,
         "filename": file.asset->originalFilename
       },
@@ -187,8 +189,9 @@ function App() {
       <main>
         <Hero variant={t.heroVariant} />
         <Marquee />
+        <VideoSpotlight cases={cases} />
         <About />
-        <Testimonials />
+        <Testimonials cases={cases} />
         <Services />
         <Methodology />
         <Cases cases={cases} onOpen={openCaseDetail} />

@@ -86,7 +86,7 @@ const HERO_IPS = [
 const HeroIPScene = () => (
   <div className="hero-ip-scene" aria-label="IP品牌策劃設計角色場景">
     <div className="ip-scene-title">
-      <span>IP品牌策划设计</span>
+      <span>超級IP品牌策劃設計</span>
       <small>IP Brand Strategy & Design</small>
     </div>
     <div className="ip-scene-deck">
@@ -243,6 +243,52 @@ const About = () => (
   </section>
 );
 
+const collectCaseVideos = (cases = []) => cases.flatMap((item) => (
+  (item.videos || [])
+    .filter(video => video && video.url)
+    .map(video => ({
+      ...video,
+      displayOrder: Number.isFinite(Number(video.displayOrder)) ? Number(video.displayOrder) : 999,
+      caseTitle: getCaseTitle(item),
+      caseDescription: getCaseDescription(item),
+      category: getCaseCategory(item),
+    }))
+)).sort((a, b) => a.displayOrder - b.displayOrder);
+
+const getVideosByPlacement = (cases = [], placement) => (
+  collectCaseVideos(cases).filter(video => video.placement === placement)
+);
+
+const VideoSpotlight = ({ cases = [] }) => {
+  const lead = getVideosByPlacement(cases, "home")[0];
+  if (!lead) return null;
+  return (
+    <section id="brand-film" className="video-spotlight" data-screen-label="02A Brand Film">
+      <div className="shell">
+        <div className="sec-eyebrow">
+          <span className="num">FILM</span>
+          <span>IP 動態展示  ·  MOTION SHOWCASE</span>
+          <span className="line"/>
+        </div>
+        <div className="video-hero-card">
+          <div className="video-copy">
+            <span className="case-tag static">{lead.category || "IP MOTION"}</span>
+            <h2>讓 IP 先動起來，<br/>品牌才會被記住。</h2>
+            <p>{lead.caption || lead.caseDescription || "用視頻展示角色性格、品牌情緒與可被傳播的內容片段。"}</p>
+          </div>
+          <figure>
+            <video src={lead.url} controls playsInline preload="metadata" />
+            <figcaption>
+              <strong>{lead.title || lead.caseTitle || "IP 動態作品"}</strong>
+              <span>{lead.filename || "作品視頻"}</span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const TESTIMONIALS = [
   { avatar:"陳", name:"陳小姐", role:"品牌市場總監", brand:"零售集團", text:"第一次溝通就很快抓到我們想年輕化、但又不能太浮誇的那個點。最後不是單純變好看，而是整套視覺真的更容易被客人記住。" },
   { avatar:"L", name:"Leo Wong", role:"項目策劃負責人", brand:"文化項目", text:"燃點對故事線很敏感，會追問很多細節。過程有點被逼著想清楚，但結果是好的，形象不空，有內容可以一直延展。" },
@@ -258,7 +304,9 @@ const TESTIMONIALS = [
   { avatar:"A", name:"Alice Ho", role:"聯名項目經理", brand:"跨界聯名", text:"他們會先找兩個品牌之間真正能成立的理由，再做視覺。這讓聯名不是硬拼在一起，而是有記憶點。" },
 ];
 
-const Testimonials = () => (
+const Testimonials = ({ cases = [] }) => {
+  const videos = getVideosByPlacement(cases, "testimonial").slice(0, 6);
+  return (
   <section id="testimonials" className="testimonials" data-screen-label="02B Testimonials">
     <div className="shell">
       <div className="sec-eyebrow">
@@ -282,9 +330,23 @@ const Testimonials = () => (
           ))}
         </div>
       </div>
+      {videos.length > 0 && (
+        <div className="testimonial-video-strip" aria-label="作品視頻播放">
+          {videos.map((video, i) => (
+            <figure key={`${video.url}-${i}`}>
+              <video src={video.url} controls playsInline preload="metadata" />
+              <figcaption>
+                <strong>{video.title || video.caseTitle || `作品視頻 ${i + 1}`}</strong>
+                <span>{video.caption || video.category || "IP 作品動態"}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
     </div>
   </section>
-);
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SERVICES
@@ -444,6 +506,10 @@ const IP_COMPONENTS = {
 const getCaseTitle = (c) => c.h || c.title || "Untitled Case";
 const getCaseDescription = (c) => c.zh || c.description || "";
 const getCaseCategory = (c) => c.tag || c.category || "WORK";
+const getCaseTags = (c) => {
+  const tags = [c.category, ...(c.tags || []), ...(c.services || [])].filter(Boolean);
+  return [...new Set(tags)].slice(0, 8);
+};
 const getCaseImages = (c) => {
   const gallery = (c.gallery || []).filter(item => item && item.url);
   const cover = c.image ? [{ url: c.image, caption: "Cover" }] : [];
@@ -559,6 +625,11 @@ const Cases = ({ cases, onOpen }) => {
                 <div className="case-foot">
                   <h4>{getCaseTitle(c)}</h4>
                   <p>{getCaseDescription(c)}</p>
+                  {getCaseTags(c).length > 0 && (
+                    <div className="case-keywords">
+                      {getCaseTags(c).slice(0, 4).map(tag => <em key={tag}>{tag}</em>)}
+                    </div>
+                  )}
                 </div>
               </article>
             );
@@ -573,7 +644,7 @@ const CaseModal = ({ data, onClose }) => {
   const images = getCaseImages(data);
   const videos = (data.videos || []).filter(video => video && video.url);
   const pdfs = (data.pdfs || []).filter(pdf => pdf && pdf.url);
-  const hasDetails = data.client || data.services?.length || data.body?.length || data.link || data.body?.length || pdfs.length;
+  const hasDetails = data.client || data.services?.length || data.tags?.length || data.body?.length || data.link || pdfs.length;
 
   return (
     <div className="case-modal" role="dialog" aria-modal="true" aria-label={getCaseTitle(data)} onClick={onClose}>
@@ -607,6 +678,12 @@ const CaseModal = ({ data, onClose }) => {
                 <div>
                   <b>SERVICES</b>
                   <span>{data.services.join(" · ")}</span>
+                </div>
+              )}
+              {getCaseTags(data).length > 0 && (
+                <div>
+                  <b>TAGS</b>
+                  <span>{getCaseTags(data).join(" · ")}</span>
                 </div>
               )}
               <div>
@@ -674,4 +751,4 @@ const CaseModal = ({ data, onClose }) => {
   );
 };
 
-Object.assign(window, { Nav, Hero, Marquee, About, Testimonials, Services, Methodology, Cases, CaseModal, NAV });
+Object.assign(window, { Nav, Hero, Marquee, VideoSpotlight, About, Testimonials, Services, Methodology, Cases, CaseModal, NAV });
