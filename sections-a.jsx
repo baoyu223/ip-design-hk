@@ -1580,17 +1580,20 @@ const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate }) 
   );
 };
 
-const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, onNav, lang = "zh-hant" }) => {
+const VideoReelOverlay = ({ videos = [], initialIndex = 0, initialSeriesIndex = 0, onClose, onOpenCase, onNav, lang = "zh-hant" }) => {
   const reelRef = React.useRef(null);
   const touchRef = React.useRef(null);
   const list = videos.filter(video => video && video.url);
+  const [seriesActive, setSeriesActive] = React.useState({});
+  const [seriesFading, setSeriesFading] = React.useState({});
 
   React.useEffect(() => {
     const el = reelRef.current;
     if (!el || !list.length) return;
+    setSeriesActive(prev => ({ ...prev, [initialIndex]: initialSeriesIndex || 0 }));
     const slide = el.querySelector(`[data-video-index="${initialIndex}"]`);
     if (slide) slide.scrollIntoView({ block: "start" });
-  }, [initialIndex, list.length]);
+  }, [initialIndex, initialSeriesIndex, list.length]);
 
   React.useEffect(() => {
     const root = reelRef.current;
@@ -1643,8 +1646,6 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, 
     root.querySelectorAll("video").forEach(video => {
       video.addEventListener("ended", onEnded);
       video.addEventListener("error", onVideoError);
-      video.addEventListener("stalled", onVideoError);
-      video.addEventListener("abort", onVideoError);
       video.addEventListener("loadeddata", onPlayable);
       video.addEventListener("playing", onPlayable);
     });
@@ -1656,14 +1657,12 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, 
       root.querySelectorAll("video").forEach((video) => {
         video.removeEventListener("ended", onEnded);
         video.removeEventListener("error", onVideoError);
-        video.removeEventListener("stalled", onVideoError);
-        video.removeEventListener("abort", onVideoError);
         video.removeEventListener("loadeddata", onPlayable);
         video.removeEventListener("playing", onPlayable);
         video.pause();
       });
     };
-  }, [initialIndex, list.length]);
+  }, [initialIndex, list.length, seriesActive]);
 
   React.useEffect(() => {
     const onKey = (event) => {
@@ -1702,24 +1701,27 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, 
         .sort((a, b) => Math.abs(a.getBoundingClientRect().top - rootTop) - Math.abs(b.getBoundingClientRect().top - rootTop))[0];
       const currentIndex = slides.indexOf(currentSlide);
       const currentVideo = list[currentIndex];
-      const currentGroup = currentVideo && (currentVideo.groupUrl || currentVideo.url);
-      const sameGroupIndexes = list
-        .map((item, index) => ({ item, index }))
-        .filter(({ item }) => currentGroup && (item.groupUrl || item.url) === currentGroup)
-        .map(({ index }) => index);
+      const seriesItems = buildVideoSeriesItems(currentVideo);
+      const activeSeriesIndex = seriesActive[currentIndex] || 0;
       const goToIndex = (targetIndex) => {
         const targetSlide = slides[targetIndex];
         if (!targetSlide || targetSlide === currentSlide) return false;
         root.scrollTo({ top: targetSlide.offsetTop, behavior: "smooth" });
         return true;
       };
-      if (sameGroupIndexes.length > 1) {
-        const currentGroupPosition = sameGroupIndexes.indexOf(currentIndex);
-        const targetIndex = dx < 0
-          ? sameGroupIndexes[Math.min(currentGroupPosition + 1, sameGroupIndexes.length - 1)]
-          : sameGroupIndexes[Math.max(currentGroupPosition - 1, 0)];
-        if (goToIndex(targetIndex)) return;
-        if (dx > 0 && currentGroupPosition <= 0) onClose && onClose();
+      if (seriesItems.length > 1) {
+        const nextSeriesIndex = dx < 0
+          ? Math.min(activeSeriesIndex + 1, seriesItems.length - 1)
+          : Math.max(activeSeriesIndex - 1, 0);
+        if (nextSeriesIndex !== activeSeriesIndex) {
+          setSeriesFading(prev => ({ ...prev, [currentIndex]: true }));
+          window.setTimeout(() => {
+            setSeriesActive(prev => ({ ...prev, [currentIndex]: nextSeriesIndex }));
+            window.setTimeout(() => setSeriesFading(prev => ({ ...prev, [currentIndex]: false })), 120);
+          }, 120);
+          return;
+        }
+        if (dx > 0 && activeSeriesIndex <= 0) onClose && onClose();
         return;
       }
       if (dx > 0) {
@@ -1733,9 +1735,11 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, 
   const jumpToVideo = (target) => {
     const root = reelRef.current;
     if (!root || !target?.url) return;
-    const targetIndex = list.findIndex(item => item.url === target.url);
-    if (targetIndex < 0) return;
-    const slide = root.querySelector(`[data-video-index="${targetIndex}"]`);
+    const parentIndex = list.findIndex(item => buildVideoSeriesItems(item).some(seriesItem => seriesItem.url === target.url));
+    if (parentIndex < 0) return;
+    const seriesIndex = buildVideoSeriesItems(list[parentIndex]).findIndex(seriesItem => seriesItem.url === target.url);
+    if (seriesIndex > 0) setSeriesActive(prev => ({ ...prev, [parentIndex]: seriesIndex }));
+    const slide = root.querySelector(`[data-video-index="${parentIndex}"]`);
     if (slide) root.scrollTo({ top: slide.offsetTop, behavior: "smooth" });
   };
 
@@ -1752,7 +1756,7 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, 
   };
 
   return (
-    <div className="video-reel" role="dialog" aria-modal="true" aria-label="作品視頻合集">
+    <div className="video-reel" role="dialog" aria-modal="true" aria-label="作品視頻合集" onTouchStartCapture={onTouchStart} onTouchEndCapture={onTouchEnd}>
       <div className="video-reel-topnav">
         <button className="video-reel-brand" type="button" onClick={() => jumpFromVideo("home")} aria-label="返回首頁">
           <span>IBD</span>
@@ -1765,20 +1769,35 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, 
         </div>
         <button className="video-reel-close" type="button" onClick={onClose} aria-label="關閉視頻">×</button>
       </div>
-      <div className="video-reel-track" ref={reelRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <div className="video-reel-track" ref={reelRef}>
         {list.map((video, index) => (
           <section className="video-reel-slide" key={`${video.url}-${index}`} data-video-index={index}>
-            <video src={getVideoPreviewSrc(video.url)} poster={video.poster || ""} controls playsInline preload={Math.abs(index - initialIndex) <= 1 ? "metadata" : "none"} />
-            <VideoBarrage video={video} />
+            {(() => {
+              const seriesItems = buildVideoSeriesItems(video);
+              const activeItem = seriesItems[seriesActive[index] || 0] || video;
+              return (
+                <>
+                  <video className={seriesFading[index] ? "is-switching" : ""} src={getVideoPreviewSrc(activeItem.url)} poster={activeItem.poster || ""} controls playsInline preload={Math.abs(index - initialIndex) <= 1 ? "metadata" : "none"} />
+                  <VideoBarrage video={activeItem} />
+                </>
+              );
+            })()}
             <div className="video-reel-caption">
               <div className="video-reel-meta">
                 <span>{String(index + 1).padStart(2, "0")} / {String(list.length).padStart(2, "0")}</span>
                 <VideoHeat video={video} />
               </div>
-              <h3>{toTrad(video.title || video.caseTitle || "作品視頻")}</h3>
-              {(video.caption || video.caseDescription || video.category) && (
-                <p>{toTrad(video.caption || video.caseDescription || video.category)}</p>
-              )}
+              {(() => {
+                const activeItem = buildVideoSeriesItems(video)[seriesActive[index] || 0] || video;
+                return (
+                  <>
+                    <h3>{toTrad(activeItem.title || activeItem.caseTitle || "作品視頻")}</h3>
+                    {(activeItem.caption || activeItem.caseDescription || activeItem.category) && (
+                      <p>{toTrad(activeItem.caption || activeItem.caseDescription || activeItem.category)}</p>
+                    )}
+                  </>
+                );
+              })()}
               {buildVideoSeriesItems(video).length > 1 && (
                 <div className="video-reel-series" aria-label="系列視頻集數">
                   <span>系列集數</span>
@@ -1786,9 +1805,15 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, 
                     {buildVideoSeriesItems(video).slice(0, 6).map((item, itemIndex) => (
                       <button
                         type="button"
-                        className={item.url === video.url ? "active" : ""}
+                        className={(seriesActive[index] || 0) === itemIndex ? "active" : ""}
                         key={`${item.url}-${itemIndex}`}
-                        onClick={() => jumpToVideo(item)}
+                        onClick={() => {
+                          setSeriesFading(prev => ({ ...prev, [index]: true }));
+                          window.setTimeout(() => {
+                            setSeriesActive(prev => ({ ...prev, [index]: itemIndex }));
+                            window.setTimeout(() => setSeriesFading(prev => ({ ...prev, [index]: false })), 120);
+                          }, 120);
+                        }}
                       >
                         {item.poster ? (
                           <img src={item.poster} alt={toTrad(item.title || `系列視頻 ${itemIndex + 1}`)} />

@@ -136,37 +136,22 @@ function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [openCase]);
 
-  const expandVideoGroup = (video = {}) => {
-    if (!video) return [];
+  const normalizeVideoGroup = (video = {}) => {
+    if (!video) return null;
     const groupMeta = {
       groupUrl: video.groupUrl || video.url,
       groupPoster: video.groupPoster || video.poster,
       groupTitle: video.groupTitle || video.title,
       groupCaption: video.groupCaption || video.caption,
     };
-    const parent = { ...video, ...groupMeta, seriesTitle: video.seriesTitle || video.title, seriesIndex: 0 };
-    const series = Array.isArray(video.seriesVideos) ? video.seriesVideos : [];
-    return [
-      parent,
-      ...series.map((item, index) => ({
-        ...video,
-        ...groupMeta,
-        ...item,
-        _id: `${video._id || video.url || "video"}-series-${index + 1}`,
-        title: item.title || video.title,
-        caption: item.caption || video.caption,
-        displayOrder: (Number(video.displayOrder) || 10) + ((index + 1) / 100),
-        seriesTitle: video.title,
-        seriesIndex: index + 1,
-      })),
-    ].filter(item => item && item.url);
+    return { ...video, ...groupMeta, seriesTitle: video.seriesTitle || video.title, seriesIndex: 0 };
   };
 
   const allPlayableVideos = React.useMemo(() => {
     const fromCases = (cases || []).flatMap(item => (
       (item.videos || [])
         .filter(video => video && video.url)
-        .flatMap(video => expandVideoGroup({
+        .map(video => normalizeVideoGroup({
           ...video,
           caseTitle: item.title,
           caseDescription: item.description,
@@ -176,7 +161,7 @@ function App() {
     ));
     const fromSite = (siteVideos || [])
       .filter(video => video && video.url)
-      .flatMap(video => expandVideoGroup({
+      .map(video => normalizeVideoGroup({
         ...video,
         caseTitle: video.caseTitle,
         caseDescription: video.caseDescription,
@@ -186,15 +171,23 @@ function App() {
     [...fromSite, ...fromCases]
       .sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999))
       .forEach(video => {
-        if (!seen.has(video.url)) seen.set(video.url, video);
+        const key = video.groupUrl || video.url;
+        if (!seen.has(key)) seen.set(key, video);
       });
     return Array.from(seen.values());
   }, [cases, siteVideos]);
 
   const openVideoFeed = (video) => {
     if (!video?.url) return;
-    const index = Math.max(0, allPlayableVideos.findIndex(item => item.url === video.url));
-    setVideoFeed({ index });
+    const index = Math.max(0, allPlayableVideos.findIndex(item => (
+      item.url === video.url
+      || (Array.isArray(item.seriesVideos) && item.seriesVideos.some(seriesItem => seriesItem && seriesItem.url === video.url))
+    )));
+    const parent = allPlayableVideos[index];
+    const seriesIndex = parent?.url === video.url
+      ? 0
+      : Math.max(0, (parent?.seriesVideos || []).findIndex(seriesItem => seriesItem && seriesItem.url === video.url) + 1);
+    setVideoFeed({ index, seriesIndex });
   };
 
   const openRelatedCase = (video) => {
@@ -413,7 +406,7 @@ function App() {
             lang={lang}
           />
         )}
-        {videoFeed && <VideoReelOverlay videos={allPlayableVideos} initialIndex={videoFeed.index} onClose={() => setVideoFeed(null)} onOpenCase={openRelatedCase} lang={lang} />}
+        {videoFeed && <VideoReelOverlay videos={allPlayableVideos} initialIndex={videoFeed.index} initialSeriesIndex={videoFeed.seriesIndex || 0} onClose={() => setVideoFeed(null)} onOpenCase={openRelatedCase} onNav={onNav} lang={lang} />}
         <Pricing onPick={setSelectedTier} lang={lang} />
         <Contact selectedTier={selectedTier} onTierChange={setSelectedTier} lang={lang} />
       </main>
