@@ -1,6 +1,27 @@
 // schemas/case.js — 案例 / 作品集
 import { BulkGalleryInput } from "../components/BulkGalleryInput";
 
+const TRAD_MAP = {
+  视频: "視頻", 说明: "說明", 标题: "標題", 首页: "首頁", 主页: "主頁", 专门: "專門",
+  黑马: "黑馬", 创意: "創意", 设计: "設計", 文化: "文化", 已经: "已經", 客户: "客戶",
+  发布: "發布", 显示: "顯示", 选择: "選擇", 上传: "上傳", 文件: "文件", 图片: "圖片",
+  品牌策划: "品牌策劃", 文创: "文創", 文旅: "文旅", 形象: "形象", 香港: "香港",
+};
+const TRAD_CHAR_MAP = {
+  这:"這", 为:"為", 专:"專", 业:"業", 马:"馬", 门:"門", 创:"創", 设:"設", 计:"計",
+  频:"頻", 视:"視", 说:"說", 标:"標", 题:"題", 发:"發", 布:"布", 显:"顯", 示:"示",
+  选:"選", 择:"擇", 联:"聯", 客:"客", 户:"戶", 传:"傳", 统:"統", 简:"簡", 体:"體",
+  国:"國", 台:"臺", 湾:"灣", 点:"點", 关:"關", 于:"於", 们:"們", 个:"個", 会:"會",
+  后:"後", 里:"裡", 与:"與", 对:"對", 应:"應", 开:"開", 启:"啟", 条:"條", 张:"張",
+  类:"類", 产:"產", 权:"權", 动:"動", 画:"畫", 数:"數", 图:"圖", 片:"片", 頁:"頁",
+};
+const toTrad = (value) => {
+  if (value == null) return value;
+  let text = String(value);
+  Object.entries(TRAD_MAP).forEach(([from, to]) => { text = text.split(from).join(to); });
+  return Array.from(text).map((ch) => TRAD_CHAR_MAP[ch] || ch).join("");
+};
+
 export default {
   name: "case",
   title: "案例 · 作品集",
@@ -101,7 +122,7 @@ export default {
             select: { title: "title", subtitle: "caption", placement: "placement" },
             prepare({ title, subtitle, placement }) {
               const labels = { home: "首頁視頻板塊", testimonial: "客戶評價作品視頻", caseOnly: "案例詳情" };
-              return { title: title || "影片", subtitle: `${labels[placement] || "案例詳情"} · ${subtitle || "點擊編輯影片"}` };
+              return { title: toTrad(title || "影片"), subtitle: toTrad(`${labels[placement] || "案例詳情"} · ${subtitle || "點擊編輯影片"}`) };
             },
           },
         },
@@ -134,7 +155,7 @@ export default {
           preview: {
             select: { title: "title", subtitle: "description", media: "file" },
             prepare({ title, subtitle }) {
-              return { title: title || "PDF 文件", subtitle: subtitle || "點擊編輯文件" };
+              return { title: toTrad(title || "PDF 文件"), subtitle: toTrad(subtitle || "點擊編輯文件") };
             },
           },
         },
@@ -145,7 +166,7 @@ export default {
   preview: {
     select: { title: "title", subtitle: "description", media: "image", year: "year", featured: "featured" },
     prepare({ title, subtitle, media, year, featured }) {
-      return { title: `${featured ? "★ " : ""}${title}`, subtitle: `${year || ""} · ${subtitle || ""}`, media };
+      return { title: toTrad(`${featured ? "★ " : ""}${title || "案例"}`), subtitle: toTrad(`${year || ""} · ${subtitle || ""}`), media };
     },
   },
 };
