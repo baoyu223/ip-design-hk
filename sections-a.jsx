@@ -1595,7 +1595,24 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, 
   React.useEffect(() => {
     const root = reelRef.current;
     if (!root || !list.length) return;
+    let stuckTimer = null;
+    const clearStuckTimer = () => {
+      if (stuckTimer) window.clearTimeout(stuckTimer);
+      stuckTimer = null;
+    };
+    const moveToNextSlide = (currentSlide, delay = 0) => {
+      const slides = Array.from(root.querySelectorAll(".video-reel-slide"));
+      const currentIndex = slides.indexOf(currentSlide);
+      if (currentIndex < 0 || !slides.length) return;
+      const nextSlide = slides[(currentIndex + 1) % slides.length];
+      if (!nextSlide || nextSlide === currentSlide) return;
+      window.setTimeout(() => {
+        nextSlide.scrollIntoView({ behavior: "smooth", block: "start" });
+        window.setTimeout(() => playSlide(nextSlide), 260);
+      }, delay);
+    };
     const playSlide = (slide) => {
+      clearStuckTimer();
       root.querySelectorAll("video").forEach((video) => {
         if (!slide || !slide.contains(video)) {
           video.pause();
@@ -1606,7 +1623,10 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, 
       if (activeVideo) {
         activeVideo.muted = false;
         activeVideo.volume = 1;
-        activeVideo.play().catch(() => {});
+        activeVideo.play().catch(() => moveToNextSlide(slide, 220));
+        stuckTimer = window.setTimeout(() => {
+          if (activeVideo.readyState < 2 || activeVideo.paused) moveToNextSlide(slide);
+        }, 6200);
       }
     };
     const slides = Array.from(root.querySelectorAll(".video-reel-slide"));
@@ -1617,22 +1637,29 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, 
       if (active && active.intersectionRatio > 0.62) playSlide(active.target);
     }, { root, threshold: [0.62, 0.78, 0.9] });
     slides.forEach(slide => observer.observe(slide));
-    const onEnded = (event) => {
-      const currentSlide = event.currentTarget.closest(".video-reel-slide");
-      const currentIndex = slides.indexOf(currentSlide);
-      if (currentIndex < 0 || !slides.length) return;
-      const nextSlide = slides[(currentIndex + 1) % slides.length];
-      if (!nextSlide) return;
-      nextSlide.scrollIntoView({ behavior: "smooth", block: "start" });
-      window.setTimeout(() => playSlide(nextSlide), 360);
-    };
-    root.querySelectorAll("video").forEach(video => video.addEventListener("ended", onEnded));
+    const onEnded = (event) => moveToNextSlide(event.currentTarget.closest(".video-reel-slide"));
+    const onPlayable = () => clearStuckTimer();
+    const onVideoError = (event) => moveToNextSlide(event.currentTarget.closest(".video-reel-slide"), 180);
+    root.querySelectorAll("video").forEach(video => {
+      video.addEventListener("ended", onEnded);
+      video.addEventListener("error", onVideoError);
+      video.addEventListener("stalled", onVideoError);
+      video.addEventListener("abort", onVideoError);
+      video.addEventListener("loadeddata", onPlayable);
+      video.addEventListener("playing", onPlayable);
+    });
     const firstSlide = root.querySelector(`[data-video-index="${initialIndex}"]`) || slides[0];
     window.setTimeout(() => playSlide(firstSlide), 180);
     return () => {
+      clearStuckTimer();
       observer.disconnect();
       root.querySelectorAll("video").forEach((video) => {
         video.removeEventListener("ended", onEnded);
+        video.removeEventListener("error", onVideoError);
+        video.removeEventListener("stalled", onVideoError);
+        video.removeEventListener("abort", onVideoError);
+        video.removeEventListener("loadeddata", onPlayable);
+        video.removeEventListener("playing", onPlayable);
         video.pause();
       });
     };
@@ -1663,6 +1690,20 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, 
     touchRef.current = null;
     if (dx > 82 && Math.abs(dx) > Math.abs(dy) * 1.35) {
       onClose && onClose();
+      return;
+    }
+    if (dx < -82 && Math.abs(dx) > Math.abs(dy) * 1.35) {
+      const root = reelRef.current;
+      if (!root) return;
+      const slides = Array.from(root.querySelectorAll(".video-reel-slide"));
+      if (!slides.length) return;
+      const rootTop = root.getBoundingClientRect().top;
+      const currentSlide = slides
+        .slice()
+        .sort((a, b) => Math.abs(a.getBoundingClientRect().top - rootTop) - Math.abs(b.getBoundingClientRect().top - rootTop))[0];
+      const currentIndex = slides.indexOf(currentSlide);
+      const nextSlide = slides[(currentIndex + 1) % slides.length];
+      if (nextSlide && nextSlide !== currentSlide) nextSlide.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
