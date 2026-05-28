@@ -1688,13 +1688,12 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, 
     const dx = touch.clientX - touchRef.current.x;
     const dy = touch.clientY - touchRef.current.y;
     touchRef.current = null;
-    if (dx > 82 && Math.abs(dx) > Math.abs(dy) * 1.35) {
-      onClose && onClose();
-      return;
-    }
-    if (dx < -82 && Math.abs(dx) > Math.abs(dy) * 1.35) {
+    if (Math.abs(dx) > 82 && Math.abs(dx) > Math.abs(dy) * 1.35) {
       const root = reelRef.current;
-      if (!root) return;
+      if (!root) {
+        if (dx > 0) onClose && onClose();
+        return;
+      }
       const slides = Array.from(root.querySelectorAll(".video-reel-slide"));
       if (!slides.length) return;
       const rootTop = root.getBoundingClientRect().top;
@@ -1702,8 +1701,32 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, 
         .slice()
         .sort((a, b) => Math.abs(a.getBoundingClientRect().top - rootTop) - Math.abs(b.getBoundingClientRect().top - rootTop))[0];
       const currentIndex = slides.indexOf(currentSlide);
-      const nextSlide = slides[(currentIndex + 1) % slides.length];
-      if (nextSlide && nextSlide !== currentSlide) nextSlide.scrollIntoView({ behavior: "smooth", block: "start" });
+      const currentVideo = list[currentIndex];
+      const currentGroup = currentVideo && (currentVideo.groupUrl || currentVideo.url);
+      const sameGroupIndexes = list
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => currentGroup && (item.groupUrl || item.url) === currentGroup)
+        .map(({ index }) => index);
+      const goToIndex = (targetIndex) => {
+        const targetSlide = slides[targetIndex];
+        if (!targetSlide || targetSlide === currentSlide) return false;
+        root.scrollTo({ top: targetSlide.offsetTop, behavior: "smooth" });
+        return true;
+      };
+      if (sameGroupIndexes.length > 1) {
+        const currentGroupPosition = sameGroupIndexes.indexOf(currentIndex);
+        const targetIndex = dx < 0
+          ? sameGroupIndexes[Math.min(currentGroupPosition + 1, sameGroupIndexes.length - 1)]
+          : sameGroupIndexes[Math.max(currentGroupPosition - 1, 0)];
+        if (goToIndex(targetIndex)) return;
+        if (dx > 0 && currentGroupPosition <= 0) onClose && onClose();
+        return;
+      }
+      if (dx > 0) {
+        onClose && onClose();
+        return;
+      }
+      goToIndex((currentIndex + 1) % slides.length);
     }
   };
 
@@ -1713,7 +1736,7 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, onClose, onOpenCase, 
     const targetIndex = list.findIndex(item => item.url === target.url);
     if (targetIndex < 0) return;
     const slide = root.querySelector(`[data-video-index="${targetIndex}"]`);
-    if (slide) slide.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (slide) root.scrollTo({ top: slide.offsetTop, behavior: "smooth" });
   };
 
   const jumpFromVideo = (id) => {
