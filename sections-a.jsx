@@ -1586,6 +1586,13 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, initialSeriesIndex = 
   const list = videos.filter(video => video && video.url);
   const [seriesActive, setSeriesActive] = React.useState({});
   const [seriesFading, setSeriesFading] = React.useState({});
+  const switchSeriesItem = React.useCallback((slideIndex, targetIndex) => {
+    setSeriesFading(prev => ({ ...prev, [slideIndex]: true }));
+    window.setTimeout(() => {
+      setSeriesActive(prev => ({ ...prev, [slideIndex]: targetIndex }));
+      window.setTimeout(() => setSeriesFading(prev => ({ ...prev, [slideIndex]: false })), 140);
+    }, 140);
+  }, []);
 
   React.useEffect(() => {
     const el = reelRef.current;
@@ -1598,11 +1605,6 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, initialSeriesIndex = 
   React.useEffect(() => {
     const root = reelRef.current;
     if (!root || !list.length) return;
-    let stuckTimer = null;
-    const clearStuckTimer = () => {
-      if (stuckTimer) window.clearTimeout(stuckTimer);
-      stuckTimer = null;
-    };
     const moveToNextSlide = (currentSlide, delay = 0) => {
       const slides = Array.from(root.querySelectorAll(".video-reel-slide"));
       const currentIndex = slides.indexOf(currentSlide);
@@ -1615,7 +1617,6 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, initialSeriesIndex = 
       }, delay);
     };
     const playSlide = (slide) => {
-      clearStuckTimer();
       root.querySelectorAll("video").forEach((video) => {
         if (!slide || !slide.contains(video)) {
           video.pause();
@@ -1626,10 +1627,7 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, initialSeriesIndex = 
       if (activeVideo) {
         activeVideo.muted = false;
         activeVideo.volume = 1;
-        activeVideo.play().catch(() => moveToNextSlide(slide, 220));
-        stuckTimer = window.setTimeout(() => {
-          if (activeVideo.readyState < 2 || activeVideo.paused) moveToNextSlide(slide);
-        }, 6200);
+        activeVideo.play().catch(() => {});
       }
     };
     const slides = Array.from(root.querySelectorAll(".video-reel-slide"));
@@ -1640,29 +1638,31 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, initialSeriesIndex = 
       if (active && active.intersectionRatio > 0.62) playSlide(active.target);
     }, { root, threshold: [0.62, 0.78, 0.9] });
     slides.forEach(slide => observer.observe(slide));
-    const onEnded = (event) => moveToNextSlide(event.currentTarget.closest(".video-reel-slide"));
-    const onPlayable = () => clearStuckTimer();
-    const onVideoError = (event) => moveToNextSlide(event.currentTarget.closest(".video-reel-slide"), 180);
+    const onEnded = (event) => {
+      const currentSlide = event.currentTarget.closest(".video-reel-slide");
+      const currentIndex = slides.indexOf(currentSlide);
+      if (currentIndex < 0) return;
+      const seriesItems = buildVideoSeriesItems(list[currentIndex]);
+      const activeSeriesIndex = seriesActive[currentIndex] || 0;
+      if (seriesItems.length > 1 && activeSeriesIndex < seriesItems.length - 1) {
+        switchSeriesItem(currentIndex, activeSeriesIndex + 1);
+        return;
+      }
+      moveToNextSlide(currentSlide, 220);
+    };
     root.querySelectorAll("video").forEach(video => {
       video.addEventListener("ended", onEnded);
-      video.addEventListener("error", onVideoError);
-      video.addEventListener("loadeddata", onPlayable);
-      video.addEventListener("playing", onPlayable);
     });
     const firstSlide = root.querySelector(`[data-video-index="${initialIndex}"]`) || slides[0];
     window.setTimeout(() => playSlide(firstSlide), 180);
     return () => {
-      clearStuckTimer();
       observer.disconnect();
       root.querySelectorAll("video").forEach((video) => {
         video.removeEventListener("ended", onEnded);
-        video.removeEventListener("error", onVideoError);
-        video.removeEventListener("loadeddata", onPlayable);
-        video.removeEventListener("playing", onPlayable);
         video.pause();
       });
     };
-  }, [initialIndex, list.length, seriesActive]);
+  }, [initialIndex, list.length, seriesActive, switchSeriesItem]);
 
   React.useEffect(() => {
     const onKey = (event) => {
@@ -1703,22 +1703,12 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, initialSeriesIndex = 
       const currentVideo = list[currentIndex];
       const seriesItems = buildVideoSeriesItems(currentVideo);
       const activeSeriesIndex = seriesActive[currentIndex] || 0;
-      const goToIndex = (targetIndex) => {
-        const targetSlide = slides[targetIndex];
-        if (!targetSlide || targetSlide === currentSlide) return false;
-        root.scrollTo({ top: targetSlide.offsetTop, behavior: "smooth" });
-        return true;
-      };
       if (seriesItems.length > 1) {
         const nextSeriesIndex = dx < 0
           ? Math.min(activeSeriesIndex + 1, seriesItems.length - 1)
           : Math.max(activeSeriesIndex - 1, 0);
         if (nextSeriesIndex !== activeSeriesIndex) {
-          setSeriesFading(prev => ({ ...prev, [currentIndex]: true }));
-          window.setTimeout(() => {
-            setSeriesActive(prev => ({ ...prev, [currentIndex]: nextSeriesIndex }));
-            window.setTimeout(() => setSeriesFading(prev => ({ ...prev, [currentIndex]: false })), 120);
-          }, 120);
+          switchSeriesItem(currentIndex, nextSeriesIndex);
           return;
         }
         if (dx > 0 && activeSeriesIndex <= 0) onClose && onClose();
@@ -1728,7 +1718,6 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, initialSeriesIndex = 
         onClose && onClose();
         return;
       }
-      goToIndex((currentIndex + 1) % slides.length);
     }
   };
 
@@ -1807,13 +1796,7 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, initialSeriesIndex = 
                         type="button"
                         className={(seriesActive[index] || 0) === itemIndex ? "active" : ""}
                         key={`${item.url}-${itemIndex}`}
-                        onClick={() => {
-                          setSeriesFading(prev => ({ ...prev, [index]: true }));
-                          window.setTimeout(() => {
-                            setSeriesActive(prev => ({ ...prev, [index]: itemIndex }));
-                            window.setTimeout(() => setSeriesFading(prev => ({ ...prev, [index]: false })), 120);
-                          }, 120);
-                        }}
+                        onClick={() => switchSeriesItem(index, itemIndex)}
                       >
                         {item.poster ? (
                           <img src={item.poster} alt={toTrad(item.title || `系列視頻 ${itemIndex + 1}`)} />
