@@ -432,6 +432,63 @@ const HeroIPScene = ({ lang = "zh-hant" }) => (
   </div>
 );
 
+const getHeroOrbitCases = (cases = []) => (
+  (cases || [])
+    .filter(item => item && item.showInHeroOrbit && item.heroCharacter)
+    .sort((a, b) => (Number(a.heroOrbitOrder) || 999) - (Number(b.heroOrbitOrder) || 999))
+);
+
+const buildHeroCharacters = (cases = []) => {
+  const linked = getHeroOrbitCases(cases).map((item, i) => ({
+    src: item.heroCharacter,
+    label: item.heroOrbitLabel || item.title || `IP ${i + 1}`,
+    caseItem: item,
+  }));
+  if (linked.length) return linked;
+  return ORBIT_IP_IMAGES.slice(0, 18).map((item, i) => ({
+    ...item,
+    label: ["IP 角色", "潮玩公仔", "文旅 IP", "產品角色", "品牌人格", "授權延展"][i % 6],
+  }));
+};
+
+const HeroCharacterOrbit = ({ cases = [], onOpenCase }) => {
+  const items = buildHeroCharacters(cases).slice(0, 24);
+  return (
+    <div className="hero-character-orbit" aria-label="首頁 IP 角色作品入口">
+      <div className="hero-character-center-word" aria-hidden="true">燃点</div>
+      <div className="hero-character-hint">
+        <span>IP CHARACTER RING</span>
+        <b>移到角色放大 · 點擊查看作品</b>
+      </div>
+      <div className="hero-character-ring">
+        {items.map((item, i) => {
+          const angle = (i * 360) / items.length;
+          const buttonProps = item.caseItem
+            ? {
+                type: "button",
+                onClick: () => onOpenCase && onOpenCase(item.caseItem),
+                "aria-label": `查看 ${getCaseTitle(item.caseItem)} 案例`,
+              }
+            : { type: "button", "aria-label": item.label };
+          return (
+            <button
+              className={`hero-character-card ${item.caseItem ? "is-linked" : ""}`}
+              key={`${item.src}-${i}`}
+              style={{ "--a": `${angle}deg`, "--ai": `${-angle}deg`, "--d": `${-(i % 8) * 0.22}s` }}
+              {...buttonProps}
+            >
+              <span className="hero-character-media">
+                <img src={item.src} alt="" loading={i < 10 ? "eager" : "lazy"} />
+              </span>
+              <em>{toTrad(item.label || item.caseItem?.title || "IP 角色")}</em>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const HERO_BARRAGE = [
   "文旅項目想做城市 IP，就找燃點",
   "潮玩角色規劃與商業化，一起從策略開始",
@@ -464,7 +521,97 @@ const HeroBarrage = () => (
   </div>
 );
 
-const Hero = ({ variant = "sunburst", lang = "zh-hant" }) => (
+const ORBIT_IP_IMAGES = Array.from({ length: 42 }, (_, i) => ({
+  src: `assets/orbit-ip/ip-${String(i + 1).padStart(2, "0")}.png`,
+  label: ["Character", "Toy", "License", "Asset", "Culture", "Product"][i % 6],
+}));
+
+const ORBIT_LABELS = [
+  { name: "IP Strategy", count: "20+", pos: "orbit-label-a" },
+  { name: "Character", count: "40+", pos: "orbit-label-b" },
+  { name: "Toy & Figure", count: "30+", pos: "orbit-label-c" },
+  { name: "Culture IP", count: "18+", pos: "orbit-label-d" },
+  { name: "Product System", count: "25+", pos: "orbit-label-e" },
+  { name: "Licensing", count: "12+", pos: "orbit-label-f" },
+];
+
+const getOrbitStyle = (i, total) => {
+  const angle = (i / total) * Math.PI * 2 - Math.PI / 2;
+  const depth = (Math.sin(angle) + 1) / 2;
+  const x = Math.cos(angle);
+  const y = Math.sin(angle);
+  return {
+    "--x": `${(x * 39).toFixed(2)}vw`,
+    "--y": `${(y * 24).toFixed(2)}vh`,
+    "--mx": `${(x * 48).toFixed(2)}vw`,
+    "--my": `${(y * 18).toFixed(2)}vh`,
+    "--s": (0.72 + depth * 0.34).toFixed(3),
+    "--z": Math.round(10 + depth * 30),
+    "--delay": `${-(i % 11) * 0.28}s`,
+  };
+};
+
+const HeroOrbit = ({ lang = "zh-hant" }) => {
+  const headline = lang === "en" ? "Super IP Brand Strategy" : lang === "zh-hans" ? "超级IP品牌策划设计" : "超級IP品牌策劃設計";
+  const copy = lang === "en"
+    ? "Characters, stories, products and licensing paths turn a brand into a living IP asset."
+    : lang === "zh-hans"
+      ? "角色不是装饰，是品牌可被看见、被传播、被授权、被销售的资产。"
+      : "角色不是裝飾，是品牌可被看見、被傳播、被授權、被銷售的資產。";
+
+  return (
+    <section id="home" className="hero hero-orbit" data-screen-label="01 Hero">
+      <div className="orbit-stage" aria-hidden="true">
+        <div className="orbit-ring">
+          {ORBIT_IP_IMAGES.map((item, i) => (
+            <figure
+              className="orbit-ip"
+              key={item.src}
+              style={getOrbitStyle(i, ORBIT_IP_IMAGES.length)}
+            >
+              <img src={item.src} alt="" loading={i < 12 ? "eager" : "lazy"} />
+            </figure>
+          ))}
+        </div>
+        <div className="orbit-ring orbit-ring-ghost">
+          {ORBIT_IP_IMAGES.slice(0, 24).map((item, i) => (
+            <span
+              className="orbit-slice"
+              key={`${item.src}-ghost`}
+              style={{ "--angle": `${(i * 360) / 24 + 5}deg` }}
+            ></span>
+          ))}
+        </div>
+      </div>
+
+      {ORBIT_LABELS.map((item) => (
+        <a className={`orbit-label ${item.pos}`} href="#cases" key={item.name}>
+          <span>{item.name}</span>
+          <sup>({item.count})</sup>
+        </a>
+      ))}
+
+      <div className="orbit-center">
+        <p className="orbit-kicker">IBD · IGNITION BRAND DESIGN</p>
+        <h1>
+          <span>We build</span>
+          <span>living IP.</span>
+        </h1>
+        <p className="orbit-cn">{headline}</p>
+        <p className="orbit-copy">{copy}</p>
+      </div>
+
+      <div className="orbit-bottom">
+        <a href="#cases">Projects</a>
+        <a href="#about">Info</a>
+        <a href="#clients">Clients</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </section>
+  );
+};
+
+const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], onOpenCase }) => (
   <section id="home" className="hero" data-screen-label="01 Hero">
     {/* corner service tags echoing poster */}
     <div className="hero-tags">
@@ -480,6 +627,7 @@ const Hero = ({ variant = "sunburst", lang = "zh-hant" }) => (
         <div className="tech-field"></div>
         <HeroClientOrbit />
         <HeroIPScene lang={lang} />
+        <HeroCharacterOrbit cases={cases} onOpenCase={onOpenCase} />
       </div>
     )}
     {variant === "minimal" && (
@@ -530,6 +678,10 @@ const Hero = ({ variant = "sunburst", lang = "zh-hant" }) => (
       <span className="bar"/>
     </div>
   </section>
+);
+
+const Hero = ({ variant = "sunburst", lang = "zh-hant", cases = [], onOpenCase }) => (
+  variant === "orbit" ? <HeroOrbit lang={lang} /> : <LegacyHero variant={variant} lang={lang} cases={cases} onOpenCase={onOpenCase} />
 );
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -7,8 +7,8 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "displayFont": "manrope"
 }/*EDITMODE-END*/;
 
-const ACCENT_OPTIONS = ["#F5F1E8", "#C9A961", "#D4D4D4", "#9CB4CC"];
-const ACCENT_LABELS  = { "#F5F1E8":"冷米白", "#C9A961":"浅金", "#D4D4D4":"铂金", "#9CB4CC":"雾蓝" };
+const ACCENT_OPTIONS = ["#111111", "#F5F1E8", "#C9A961", "#D4D4D4", "#9CB4CC"];
+const ACCENT_LABELS  = { "#111111":"屏幕黑", "#F5F1E8":"冷米白", "#C9A961":"浅金", "#D4D4D4":"铂金", "#9CB4CC":"雾蓝" };
 const FONT_OPTIONS = [
   { id:"manrope", label:"Manrope · 重粗几何", stack:"'Manrope', 'Noto Sans TC', 'PingFang TC', sans-serif" },
   { id:"sora",    label:"Sora · 现代克制",    stack:"'Sora', 'Noto Sans TC', sans-serif" },
@@ -245,6 +245,10 @@ function App() {
       "cases": *[_type == "case" && !(_id in path("drafts.**"))] | order(featured desc, year desc, _createdAt desc){
         _id, _createdAt, title, description, category, year,
         "image": image.asset->url,
+        showInHeroOrbit,
+        heroOrbitLabel,
+        heroOrbitOrder,
+        "heroCharacter": heroCharacter.asset->url,
         size, featured,
         client, services, tags, body, link,
         "gallery": gallery[]{
@@ -386,7 +390,7 @@ function App() {
       <ShapeDefs />
       <Nav active={active} onNav={onNav} theme={t.theme} onThemeToggle={() => setTweak("theme", t.theme === "light" ? "dark" : "light")} lang={lang} onLangChange={changeLang} />
       <main>
-        <Hero variant={t.heroVariant} lang={lang} />
+        <Hero variant={t.heroVariant} lang={lang} cases={cases} onOpenCase={openCaseDetail} />
         <Marquee lang={lang} />
         <VideoSpotlight cases={cases} siteVideos={siteVideos} onOpenVideo={openVideoFeed} onOpenCase={openRelatedCase} lang={lang} />
         <About lang={lang} />
@@ -427,7 +431,7 @@ function App() {
 
         <TweakSection label="Hero 版式" />
         <TweakSelect label="Hero variant" value={t.heroVariant}
-          options={[{value:"sunburst",label:"放射光环 (默认)"},{value:"minimal",label:"极简留白"},{value:"grid",label:"网格"}]}
+          options={[{value:"sunburst",label:"黑底放射 IP 圆环 (默认)"},{value:"orbit",label:"IP椭圆矩阵"},{value:"minimal",label:"极简留白"},{value:"grid",label:"网格"}]}
           onChange={(v)=>setTweak("heroVariant", v)} />
 
         <TweakSection label="标题字体气质" />
