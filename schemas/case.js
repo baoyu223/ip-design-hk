@@ -49,6 +49,37 @@ export default {
     { name: "year", title: "年份", type: "number", validation: (R) => R.required().integer().min(2000).max(2099) },
     { name: "image", title: "案例封面圖", type: "image", options: { hotspot: true } },
     {
+      name: "showInHeroOrbit",
+      title: "放到首頁 IP 角色圓環",
+      type: "boolean",
+      description: "打開後，這個案例的角色會出現在首頁黑色動畫圓環；訪客點擊角色會進入此作品詳情。",
+      initialValue: false,
+    },
+    {
+      name: "heroCharacter",
+      title: "首頁圓環角色透明圖",
+      type: "image",
+      description: "建議上傳透明 PNG。前台會保持原比例，不拉伸變形。",
+      options: { hotspot: false },
+      hidden: ({ document }) => !document?.showInHeroOrbit,
+    },
+    {
+      name: "heroOrbitLabel",
+      title: "首頁圓環角色文字",
+      type: "string",
+      description: "例如：黑馬文化IP、黃一山IP形象、小胖系列。留空會使用案例標題。",
+      validation: (R) => R.max(40),
+      hidden: ({ document }) => !document?.showInHeroOrbit,
+    },
+    {
+      name: "heroOrbitOrder",
+      title: "首頁圓環排序",
+      type: "number",
+      description: "數字越小越靠前；只影響首頁 IP 角色圓環。",
+      initialValue: 10,
+      hidden: ({ document }) => !document?.showInHeroOrbit,
+    },
+    {
       name: "size", title: "卡片尺寸", type: "string",
       options: {
         list: [
