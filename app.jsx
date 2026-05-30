@@ -60,6 +60,7 @@ function App() {
   const [selectedTier, setSelectedTier] = React.useState(null);
   const [cases, setCases] = React.useState([]);
   const [siteVideos, setSiteVideos] = React.useState([]);
+  const [heroIps, setHeroIps] = React.useState([]);
   const [openCase, setOpenCase] = React.useState(null);
   const [videoFeed, setVideoFeed] = React.useState(null);
 
@@ -242,6 +243,13 @@ function App() {
     const projectId = "6fxw2dmo";
     const dataset = "production";
     const query = `{
+      "heroIps": *[_type == "heroIp" && !(_id in path("drafts.**")) && active != false] | order(displayOrder asc, _createdAt asc){
+        _id,
+        label,
+        displayOrder,
+        "src": image.asset->url,
+        "caseId": relatedCase->_id
+      },
       "cases": *[_type == "case" && !(_id in path("drafts.**"))] | order(featured desc, year desc, _createdAt desc){
         _id, _createdAt, title, description, category, year,
         "image": image.asset->url,
@@ -317,6 +325,8 @@ function App() {
       .then(data => {
         const result = data?.result || {};
         const caseList = Array.isArray(result.cases) ? result.cases : [];
+        const heroIpList = Array.isArray(result.heroIps) ? result.heroIps.filter(item => item && item.src) : [];
+        setHeroIps(heroIpList);
         const rawVideos = Array.isArray(result.siteVideos) ? result.siteVideos : [];
         const videoList = rawVideos
           .filter(video => video && video.url)
@@ -390,7 +400,7 @@ function App() {
       <ShapeDefs />
       <Nav active={active} onNav={onNav} theme={t.theme} onThemeToggle={() => setTweak("theme", t.theme === "light" ? "dark" : "light")} lang={lang} onLangChange={changeLang} />
       <main>
-        <Hero variant={t.heroVariant} lang={lang} cases={cases} onOpenCase={openCaseDetail} />
+        <Hero variant={t.heroVariant} lang={lang} cases={cases} heroIps={heroIps} onOpenCase={openCaseDetail} />
         <Marquee lang={lang} />
         <VideoSpotlight cases={cases} siteVideos={siteVideos} onOpenVideo={openVideoFeed} onOpenCase={openRelatedCase} lang={lang} />
         <About lang={lang} />

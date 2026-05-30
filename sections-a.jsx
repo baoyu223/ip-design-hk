@@ -438,7 +438,15 @@ const getHeroOrbitCases = (cases = []) => (
     .sort((a, b) => (Number(a.heroOrbitOrder) || 999) - (Number(b.heroOrbitOrder) || 999))
 );
 
-const buildHeroCharacters = (cases = []) => {
+const buildHeroCharacters = (cases = [], heroIps = []) => {
+  const fromHeroIps = (heroIps || [])
+    .filter(item => item && item.src)
+    .map((item) => ({
+      src: item.src,
+      label: item.label || "",
+      caseItem: item.caseId ? (cases || []).find(c => c._id === item.caseId) || null : null,
+    }));
+  if (fromHeroIps.length) return fromHeroIps;
   const linked = getHeroOrbitCases(cases).map((item, i) => ({
     src: item.heroCharacter,
     label: item.heroOrbitLabel || item.title || `IP ${i + 1}`,
@@ -451,39 +459,73 @@ const buildHeroCharacters = (cases = []) => {
   }));
 };
 
-const HeroCharacterOrbit = ({ cases = [], onOpenCase }) => {
-  const items = buildHeroCharacters(cases).slice(0, 24);
+const HeroCharacterOrbit = ({ cases = [], heroIps = [], onOpenCase }) => {
+  const items = buildHeroCharacters(cases, heroIps).slice(0, 24);
+  const [hoverIndex, setHoverIndex] = React.useState(null);
+  const [autoIndex, setAutoIndex] = React.useState(0);
+
+  // auto-play: cycle the centre spotlight through every IP while the ring keeps turning
+  React.useEffect(() => {
+    if (!items.length || hoverIndex != null) return;
+    const id = setInterval(() => setAutoIndex(v => (v + 1) % items.length), 2600);
+    return () => clearInterval(id);
+  }, [hoverIndex, items.length]);
+
+  // touch fallback: release a stuck hover so auto-play resumes on phones
+  React.useEffect(() => {
+    if (hoverIndex == null) return;
+    if (window.matchMedia && window.matchMedia("(hover: hover)").matches) return;
+    const id = setTimeout(() => setHoverIndex(null), 4000);
+    return () => clearTimeout(id);
+  }, [hoverIndex]);
+
+  const isManual = hoverIndex != null;
+  const activeIndex = isManual ? hoverIndex : (items.length ? autoIndex % items.length : null);
+  const activeItem = activeIndex == null ? null : items[activeIndex];
+
   return (
-    <div className="hero-character-orbit" aria-label="首頁 IP 角色作品入口">
-      <div className="hero-character-center-word" aria-hidden="true">燃点</div>
+    <div className="hero-character-orbit" aria-label="首頁 IP 角色作品入口" onMouseLeave={() => setHoverIndex(null)}>
       <div className="hero-character-hint">
         <span>IP CHARACTER RING</span>
-        <b>移到角色放大 · 點擊查看作品</b>
+        <b>自動輪播 · 移到角色放大 · 點擊查看作品</b>
       </div>
-      <div className="hero-character-ring">
-        {items.map((item, i) => {
-          const angle = (i * 360) / items.length;
-          const buttonProps = item.caseItem
-            ? {
-                type: "button",
-                onClick: () => onOpenCase && onOpenCase(item.caseItem),
-                "aria-label": `查看 ${getCaseTitle(item.caseItem)} 案例`,
-              }
-            : { type: "button", "aria-label": item.label };
-          return (
-            <button
-              className={`hero-character-card ${item.caseItem ? "is-linked" : ""}`}
-              key={`${item.src}-${i}`}
-              style={{ "--a": `${angle}deg`, "--ai": `${-angle}deg`, "--d": `${-(i % 8) * 0.22}s` }}
-              {...buttonProps}
-            >
+      <div className="hero-character-ring" aria-hidden="true"></div>
+      {activeItem && (
+        <div className="hero-character-spotlight" aria-hidden="true" key={`${activeIndex}-${activeItem.src}`}>
+          <img src={activeItem.src} alt="" />
+          <span>{toTrad(activeItem.label || activeItem.caseItem?.title || "IP 角色")}</span>
+        </div>
+      )}
+      <div className={`hero-character-cards ${isManual ? "is-paused" : ""}`}>
+      {items.map((item, i) => {
+        const angle = (i / items.length) * Math.PI * 2 - Math.PI / 2;
+        const x = 50 + Math.cos(angle) * 46;
+        const y = 50 + Math.sin(angle) * 46;
+        const buttonProps = item.caseItem
+          ? {
+              type: "button",
+              onClick: () => onOpenCase && onOpenCase(item.caseItem),
+              "aria-label": `查看 ${getCaseTitle(item.caseItem)} 案例`,
+            }
+          : { type: "button", "aria-label": item.label };
+        return (
+          <button
+            className={`hero-character-card ${item.caseItem ? "is-linked" : ""} ${hoverIndex === i ? "is-active" : ""} ${(!isManual && activeIndex === i) ? "is-auto" : ""}`}
+            key={`${item.src}-${i}`}
+            style={{ "--x": `${x}%`, "--y": `${y}%`, "--d": `${-(i % 8) * 0.22}s` }}
+            onMouseEnter={() => setHoverIndex(i)}
+            onFocus={() => setHoverIndex(i)}
+            {...buttonProps}
+          >
+            <span className="hero-character-spin">
               <span className="hero-character-media">
                 <img src={item.src} alt="" loading={i < 10 ? "eager" : "lazy"} />
               </span>
-              <em>{toTrad(item.label || item.caseItem?.title || "IP 角色")}</em>
-            </button>
-          );
-        })}
+            </span>
+            <em>{toTrad(item.label || item.caseItem?.title || "IP 角色")}</em>
+          </button>
+        );
+      })}
       </div>
     </div>
   );
@@ -507,19 +549,30 @@ const HERO_BARRAGE = [
   "品牌需要記憶點，IP 是最有溫度的入口",
 ];
 
-const HeroBarrage = () => (
-  <div className="hero-barrage" aria-label="燃點IP品牌策劃能力">
-    {[0, 1, 2].map((row) => (
-      <div className="hero-barrage-row" key={row}>
-        <div className="hero-barrage-track">
-          {[...HERO_BARRAGE.slice(row * 5, row * 5 + 7), ...HERO_BARRAGE.slice(row * 5, row * 5 + 7)].map((text, index) => (
-            <span key={`${row}-${text}-${index}`}>{text}</span>
-          ))}
-        </div>
-      </div>
-    ))}
-  </div>
-);
+const HeroBarrage = () => {
+  const LANES = 9;
+  const comments = [...HERO_BARRAGE, ...HERO_BARRAGE.slice(0, 9)];
+  return (
+    <div className="hero-barrage" aria-label="燃點IP品牌策劃能力">
+      {comments.map((text, i) => {
+        const lane = i % LANES;
+        const top = 6 + lane * (88 / (LANES - 1));
+        const dur = 24 + ((i * 7) % 6) * 4;
+        const delay = -(((i * 5.3) % dur).toFixed(2));
+        const o = i % 3 === 0 ? 0.92 : i % 3 === 1 ? 0.66 : 0.48;
+        return (
+          <span
+            key={`${text}-${i}`}
+            className="hero-danmaku"
+            style={{ "--top": `${top.toFixed(1)}%`, "--dur": `${dur}s`, "--delay": `${delay}s`, "--o": o }}
+          >
+            {text}
+          </span>
+        );
+      })}
+    </div>
+  );
+};
 
 const ORBIT_IP_IMAGES = Array.from({ length: 42 }, (_, i) => ({
   src: `assets/orbit-ip/ip-${String(i + 1).padStart(2, "0")}.png`,
@@ -611,7 +664,7 @@ const HeroOrbit = ({ lang = "zh-hant" }) => {
   );
 };
 
-const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], onOpenCase }) => (
+const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIps = [], onOpenCase }) => (
   <section id="home" className="hero" data-screen-label="01 Hero">
     {/* corner service tags echoing poster */}
     <div className="hero-tags">
@@ -625,9 +678,7 @@ const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], onOpen
       <div className="hero-bg">
         <Sunburst className="sun" color="var(--paper)" />
         <div className="tech-field"></div>
-        <HeroClientOrbit />
-        <HeroIPScene lang={lang} />
-        <HeroCharacterOrbit cases={cases} onOpenCase={onOpenCase} />
+        <HeroCharacterOrbit cases={cases} heroIps={heroIps} onOpenCase={onOpenCase} />
       </div>
     )}
     {variant === "minimal" && (
@@ -646,6 +697,7 @@ const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], onOpen
 
     <div className="shell" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 56px" }}>
       <div className="hero-content">
+        <div className="hero-super">{tt(lang, "heroScene")}</div>
         <div className="hero-mark hero-mark-image">
           <img className="hero-wordmark hero-wordmark-black" src="assets/brand-wordmark-black-alpha.png" alt="燃點" />
           <img className="hero-wordmark hero-wordmark-white" src="assets/brand-wordmark-white-alpha.png" alt="燃點" />
@@ -680,8 +732,8 @@ const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], onOpen
   </section>
 );
 
-const Hero = ({ variant = "sunburst", lang = "zh-hant", cases = [], onOpenCase }) => (
-  variant === "orbit" ? <HeroOrbit lang={lang} /> : <LegacyHero variant={variant} lang={lang} cases={cases} onOpenCase={onOpenCase} />
+const Hero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIps = [], onOpenCase }) => (
+  variant === "orbit" ? <HeroOrbit lang={lang} /> : <LegacyHero variant={variant} lang={lang} cases={cases} heroIps={heroIps} onOpenCase={onOpenCase} />
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
