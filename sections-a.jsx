@@ -22,9 +22,9 @@ const I18N_TEXT = {
     heroGreeting: "Hi，讓品牌被看見，也被記住。",
     heroTag: "以 A.I. 邏輯，點燃品牌生命",
     aboutEyebrow: "關於我們  ·  ABOUT",
-    aboutTitleA: "設計即",
+    aboutTitleA: "角色IP ＋ 品牌化運營 ＝ 品牌",
     aboutTitleB: "資產",
-    aboutTitleC: "。不是裝飾，是火種。",
+    aboutTitleC: "",
     aboutBody: "燃點是植根香港的高端視覺實驗室。我們不做廉價的「平面美化」——十五年以上設計沉澱，被我們重塑為一套可被商業驗證的方法：將品牌基因解碼成「超級 IP」，讓 IP 以潮玩規格進入產品線、進入聯名、進入盲盒、進入 Z 世代的私域。",
     aboutBody2: "一個沒有故事的形象，是空殼。一個沒有商業閉環的 IP，是擺設。我們交付的，是品牌可長期持有的資產。",
     shareDockTitle: "把燃點轉給品牌負責人",
@@ -46,9 +46,9 @@ const I18N_TEXT = {
     heroGreeting: "Hi，让品牌被看见，也被记住。",
     heroTag: "以 A.I. 逻辑，点燃品牌生命",
     aboutEyebrow: "关于我们  ·  ABOUT",
-    aboutTitleA: "设计即",
+    aboutTitleA: "角色IP ＋ 品牌化运营 ＝ 品牌",
     aboutTitleB: "资产",
-    aboutTitleC: "。不是装饰，是火种。",
+    aboutTitleC: "",
     aboutBody: "燃点是植根香港的高端视觉实验室。我们不做廉价的“平面美化”，而是把十五年以上设计沉淀，重塑为一套可被商业验证的方法：将品牌基因解码成“超级 IP”，让 IP 进入产品线、联名、盲盒与年轻消费场景。",
     aboutBody2: "一个没有故事的形象，是空壳。一个没有商业闭环的 IP，是摆设。我们交付的，是品牌可长期持有的资产。",
     shareDockTitle: "把燃点转给品牌负责人",
@@ -70,9 +70,9 @@ const I18N_TEXT = {
     heroGreeting: "Hi, make your brand seen and remembered.",
     heroTag: "Igniting brand life with strategy, design and IP logic",
     aboutEyebrow: "ABOUT US",
-    aboutTitleA: "Design is an ",
-    aboutTitleB: "asset",
-    aboutTitleC: ". Not decoration, but ignition.",
+    aboutTitleA: "Character IP + brand operations = ",
+    aboutTitleB: "brand assets",
+    aboutTitleC: "",
     aboutBody: "Ignition is a Hong Kong based visual lab. We turn brand DNA into character IP, visual systems, packaging worlds and commercial assets that can live across products, content, collaborations and licensing.",
     aboutBody2: "A character without story is empty. An IP without commercial structure is decoration. We build assets that brands can keep growing.",
     shareDockTitle: "Share IBD with your brand team",
@@ -563,24 +563,23 @@ const HERO_BARRAGE = [
 const HeroBarrage = () => {
   // deterministic pseudo-random (no Math.random — consistent across renders)
   const h = (n) => ((Math.sin(n * 127.1 + 311.7) * 43758.5453) % 1 + 1) % 1;
-  const LANES = 7;
-  // distribute items to lanes via hash (not sequential) for irregular feel
+  const LANES = 8;
+  // round-robin guarantees EVERY lane is filled (no empty top/gaps), shuffled order keeps it random
+  const order = HERO_BARRAGE.map((text, i) => ({ text, i, k: h(i * 9.13) }))
+    .sort((a, b) => a.k - b.k);
   const laneItems = Array.from({ length: LANES }, () => []);
-  HERO_BARRAGE.forEach((text, i) => {
-    const lane = Math.floor(h(i * 3.71) * LANES);
-    laneItems[lane].push({ text, i });
-  });
+  order.forEach((item, idx) => laneItems[idx % LANES].push(item));
   return (
     <div className="hero-barrage" aria-label="燃點IP品牌策劃能力">
       {laneItems.map((items, lane) => {
-        const top = 7 + lane * (86 / (LANES - 1));
-        // varied speed per lane: 24–48s
-        const dur = 24 + lane * 3.5 + h(lane * 2.3) * 6;
-        const o = 0.48 + h(lane * 1.7) * 0.42;
+        const top = 5 + lane * (90 / (LANES - 1));
+        // varied speed per lane: 26–46s
+        const dur = 26 + lane * 2.6 + h(lane * 2.3) * 5;
+        const o = 0.5 + h(lane * 1.7) * 0.4;
         return items.map(({ text, i }, pos) => {
-          // guaranteed non-overlap: base stagger = dur/count; add small hash nudge (≤20% of slot)
-          const slot = items.length > 1 ? dur / items.length : dur;
-          const nudge = h(i * 5.3 + lane) * slot * 0.2;
+          // guaranteed non-overlap: even slot per lane + small hash nudge (≤18% of slot)
+          const slot = items.length > 0 ? dur / items.length : dur;
+          const nudge = h(i * 5.3 + lane) * slot * 0.18;
           const delay = -(((pos * slot + nudge) % dur).toFixed(2));
           return (
             <span
@@ -796,7 +795,7 @@ const About = ({ lang = "zh-hant" }) => (
         <span>{tt(lang, "aboutEyebrow")}</span>
         <span className="line"/>
       </div>
-      <h2 className="sec-title">{tt(lang, "aboutTitleA")}<span className="accent">{tt(lang, "aboutTitleB")}</span><br/>{tt(lang, "aboutTitleC")}</h2>
+      <h2 className="sec-title">{tt(lang, "aboutTitleA")}<span className="accent">{tt(lang, "aboutTitleB")}</span>{tt(lang, "aboutTitleC") && tt(lang, "aboutTitleC") !== "aboutTitleC" ? <><br/>{tt(lang, "aboutTitleC")}</> : null}</h2>
       <div className="about-grid">
         <div className="about-manifesto">
           {tt(lang, "aboutBody")}
@@ -1904,6 +1903,20 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, initialSeriesIndex = 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  // hard-stop ALL reel videos on unmount — kills residual audio when returning to homepage
+  React.useEffect(() => {
+    return () => {
+      document.querySelectorAll(".video-reel video").forEach((v) => {
+        try {
+          v.pause();
+          v.muted = true;
+          v.removeAttribute("src");
+          v.load();
+        } catch (e) {}
+      });
+    };
+  }, []);
 
   if (!list.length) return null;
 
