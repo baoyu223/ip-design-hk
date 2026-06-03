@@ -1832,7 +1832,7 @@ const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate, al
           </span>
           <span>
             <strong>© 燃點品牌設計 · 原創 IP 版權聲明</strong>
-            <em>本作品所有 IP 形象、車標設計及表達內容均為原創版權，已在香港及內地依法登記。未經授權任意複製、模仿、轉載或商業使用，將依法追責。如需授權合作，歡迎聯絡我們。</em>
+            <em>所有 IP 形象、設計及表達內容均為原創版權，未經授權任意複製、模仿、轉載或商業使用，將依法追責。如需授權合作，歡迎聯絡我們。</em>
           </span>
         </div>
         <LicenseInquiry data={data} />

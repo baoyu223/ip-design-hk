@@ -834,8 +834,8 @@ body.light .m-vis{background:var(--ink-2)}
 .case-more-card em{font-style:normal;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
 
 /* ── 分類/服務 chip ── */
-.case-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.case-chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:11.5px;line-height:1;letter-spacing:.04em;white-space:nowrap}
+.case-chip-row{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;gap:6px!important;margin-top:2px;padding-bottom:0!important;border-bottom:none!important}
+.case-chip{flex:0 0 auto!important;width:auto!important;display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:11.5px;line-height:1;letter-spacing:.04em;white-space:nowrap;box-sizing:border-box}
 .case-chip.cat{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent)}
 .case-chip.svc{background:color-mix(in srgb,var(--paper) 8%,transparent);color:color-mix(in srgb,var(--paper) 72%,transparent);border:1px solid var(--line)}
 .case-chip.kw{background:transparent;color:var(--mute);border:1px solid var(--line);font-size:11px}
@@ -843,8 +843,8 @@ body.light .m-vis{background:var(--ink-2)}
 /* ── 版權聲明條 ── */
 .case-copyright{display:flex;align-items:flex-start;gap:12px;padding:20px 56px;background:color-mix(in srgb,#d4370a 8%,transparent);border-top:1px solid color-mix(in srgb,#d4370a 28%,transparent);border-bottom:1px solid color-mix(in srgb,#d4370a 28%,transparent)}
 .case-copyright-icon{flex:none;color:#d4370a;margin-top:2px}
-.case-copyright strong{display:block;font-size:12.5px;font-weight:700;color:#d4370a;letter-spacing:.04em;margin-bottom:4px}
-.case-copyright em{display:block;font-style:normal;font-size:11.5px;line-height:1.7;color:color-mix(in srgb,var(--paper) 62%,transparent)}
+.case-copyright strong{display:block;font-size:11.5px;font-weight:700;color:#d4370a;letter-spacing:.04em;margin-bottom:3px}
+.case-copyright em{display:block;font-style:normal;font-size:11px;line-height:1.65;color:color-mix(in srgb,var(--paper) 55%,transparent)}
 
 /* ── 關鍵詞標籤列 ── */
 .case-keywords{padding:20px 56px 28px;border-top:1px solid var(--line);display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
