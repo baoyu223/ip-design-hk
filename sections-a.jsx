@@ -1806,12 +1806,111 @@ const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate }) 
   );
 };
 
+const VideoConsultPanel = ({ video, lang = "zh-hant", onClose }) => {
+  const [state, setState] = React.useState("idle");
+  const [intent, setIntent] = React.useState("授權 IP");
+  const title = video ? toTrad(video.title || video.caseTitle || video.seriesTitle || "作品視頻") : "";
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    formData.append("_subject", `IP 合作諮詢｜${intent}｜${title}`);
+    formData.append("_cc", "hello@ip-design.hk,baoguangwen7708@gmail.com");
+    formData.append("_template", "table");
+    formData.append("_captcha", "false");
+    formData.append("合作意向", intent);
+    formData.append("來源視頻", title);
+    setState("sending");
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/baoguangwen7708@gmail.com", {
+        method: "POST",
+        headers: { "Accept": "application/json" },
+        body: formData,
+      });
+      if (!response.ok) throw new Error("submit failed");
+      form.reset();
+      setState("sent");
+    } catch (error) {
+      setState("error");
+    }
+  };
+  return (
+    <div className="video-consult" role="dialog" aria-modal="false" aria-label="授權合作諮詢">
+      <div className="video-consult-card">
+        <button className="video-consult-close" type="button" onClick={onClose} aria-label="返回繼續觀看">×</button>
+        <div className="video-consult-head">
+          <span>IP 合作 · LICENSING & CUSTOM</span>
+          <h4>喜歡這個 IP？<br/>留個聯繫方式，我們和你聊合作。</h4>
+          {title && <em>來源：{title}</em>}
+        </div>
+        <div className="video-consult-intent" role="group" aria-label="合作方式">
+          {["授權 IP", "定制 IP"].map(opt => (
+            <button
+              key={opt}
+              type="button"
+              className={intent === opt ? "on" : ""}
+              onClick={() => setIntent(opt)}
+            >{opt}</button>
+          ))}
+        </div>
+        <form className="video-consult-form" onSubmit={onSubmit}>
+          <label>
+            <span>稱呼 / 公司</span>
+            <input name="稱呼" placeholder="例如：某某文化 / 陳小姐" required />
+          </label>
+          <label>
+            <span>聯繫方式</span>
+            <input name="聯絡方式" placeholder="Email / WhatsApp / WeChat" required />
+          </label>
+          <label>
+            <span>想做什麼（選填）</span>
+            <textarea name="需求" rows={2} placeholder={intent === "定制 IP" ? "例如：想為品牌定制一個吉祥物角色，用於包裝與門店" : "例如：想授權這個 IP 開發潮玩 / 文具 / 聯名款"} />
+          </label>
+          <button type="submit" className="video-consult-submit" disabled={state === "sending"}>
+            {state === "sending" ? "正在提交..." : "提交合作諮詢"} <em>→</em>
+          </button>
+          {state === "sent" && <p className="video-consult-ok">已收到！我們會盡快與你聯繫。可繼續觀看視頻。</p>}
+          {state === "error" && <p className="video-consult-err">提交未成功，請稍後再試，或郵件至 hello@ip-design.hk。</p>}
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const VideoReelOverlay = ({ videos = [], initialIndex = 0, initialSeriesIndex = 0, onClose, onOpenCase, onNav, lang = "zh-hant" }) => {
   const reelRef = React.useRef(null);
   const touchRef = React.useRef(null);
   const list = videos.filter(video => video && video.url);
   const [seriesActive, setSeriesActive] = React.useState({});
   const [seriesFading, setSeriesFading] = React.useState({});
+  const [consultOpen, setConsultOpen] = React.useState(false);
+  const [consultVideo, setConsultVideo] = React.useState(null);
+
+  // pause video while consult form is open, so audio doesn't compete
+  React.useEffect(() => {
+    const root = reelRef.current;
+    if (!root) return;
+    if (consultOpen) {
+      root.querySelectorAll("video").forEach(v => v.pause());
+    }
+  }, [consultOpen]);
+
+  const openConsult = () => {
+    const root = reelRef.current;
+    let current = list[initialIndex];
+    if (root) {
+      const slides = Array.from(root.querySelectorAll(".video-reel-slide"));
+      const rootTop = root.getBoundingClientRect().top;
+      const slide = slides.slice().sort((a, b) => Math.abs(a.getBoundingClientRect().top - rootTop) - Math.abs(b.getBoundingClientRect().top - rootTop))[0];
+      const idx = slides.indexOf(slide);
+      if (idx >= 0) {
+        const seriesItems = buildVideoSeriesItems(list[idx]);
+        current = seriesItems[seriesActive[idx] || 0] || list[idx];
+      }
+    }
+    setConsultVideo(current);
+    setConsultOpen(true);
+  };
   const switchSeriesItem = React.useCallback((slideIndex, targetIndex) => {
     // pause ALL videos in this slide before switching so old audio stops
     const root = reelRef.current;
@@ -2002,8 +2101,17 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, initialSeriesIndex = 
           <button type="button" onClick={() => jumpFromVideo("contact")}>{lang === "en" ? "Contact" : lang === "zh-hans" ? "联系我们" : "聯繫我們"}</button>
           <button type="button" onClick={() => shareSite("native", lang)}>{lang === "en" ? "Share" : "分享"}</button>
         </div>
-        <button className="video-reel-close" type="button" onClick={onClose} aria-label="關閉視頻">×</button>
+        <div className="video-reel-topright">
+          <button className="video-reel-consult" type="button" onClick={openConsult} aria-label="授權合作諮詢">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.9-.9L3 21l1.9-5.6a8.5 8.5 0 0 1-.9-3.9A8.38 8.38 0 0 1 12.5 3a8.38 8.38 0 0 1 8.5 8.5z"/>
+            </svg>
+            <em>合作</em>
+          </button>
+          <button className="video-reel-close" type="button" onClick={onClose} aria-label="關閉視頻">×</button>
+        </div>
       </div>
+      {consultOpen && <VideoConsultPanel video={consultVideo} lang={lang} onClose={() => setConsultOpen(false)} />}
       <div className="video-reel-track" ref={reelRef}>
         {list.map((video, index) => (
           <section className="video-reel-slide" key={`${video.url}-${index}`} data-video-index={index}>

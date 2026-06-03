@@ -882,6 +882,43 @@ body.light .m-vis{background:var(--ink-2)}
 .video-reel-navlinks button{border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.82);padding:8px 12px;font-size:12px;letter-spacing:.06em;cursor:pointer}
 .video-reel-navlinks button:hover{background:#fff;color:#111}
 .video-reel-close{width:38px;height:38px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(0,0,0,.45);color:#fff;font-size:25px;line-height:1;display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.video-reel-topright{justify-self:end;display:flex;align-items:center;gap:9px}
+.video-reel-consult{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px 0 11px;border:1px solid color-mix(in srgb,var(--accent) 60%,transparent);border-radius:999px;background:color-mix(in srgb,var(--accent) 22%,rgba(0,0,0,.4));color:#fff;cursor:pointer;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);transition:background .18s,transform .18s}
+.video-reel-consult svg{color:var(--accent)}
+.video-reel-consult em{font-style:normal;font-family:var(--font-display);font-size:12.5px;font-weight:800;letter-spacing:.04em}
+.video-reel-consult:hover{background:var(--accent);transform:translateY(-1px)}
+.video-reel-consult:hover svg{color:#111}
+.video-reel-consult:hover em{color:#111}
+/* in-video consult panel */
+.video-consult{position:fixed;inset:0;z-index:200;display:flex;justify-content:flex-end;padding:14px;background:rgba(5,5,5,.42);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);animation:vConsultFade .22s ease}
+@keyframes vConsultFade{from{opacity:0}to{opacity:1}}
+.video-consult-card{position:relative;align-self:stretch;width:min(390px,100%);max-height:100%;overflow-y:auto;scrollbar-width:none;border:1px solid color-mix(in srgb,var(--accent) 34%,rgba(255,255,255,.14));border-radius:18px;background:linear-gradient(180deg,rgba(20,18,17,.86),rgba(12,11,10,.9));backdrop-filter:blur(22px) saturate(1.1);-webkit-backdrop-filter:blur(22px) saturate(1.1);box-shadow:0 30px 80px rgba(0,0,0,.5);padding:22px 22px 24px;color:#fff;animation:vConsultSlide .3s cubic-bezier(.2,.8,.2,1)}
+.video-consult-card::-webkit-scrollbar{display:none}
+@keyframes vConsultSlide{from{transform:translateX(28px);opacity:0}to{transform:translateX(0);opacity:1}}
+.video-consult-close{position:absolute;top:12px;right:12px;width:34px;height:34px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:rgba(255,255,255,.08);color:#fff;font-size:22px;line-height:1;display:grid;place-items:center;cursor:pointer}
+.video-consult-close:hover{background:#fff;color:#111}
+.video-consult-head span{font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;color:var(--accent);text-transform:uppercase}
+.video-consult-head h4{margin:9px 0 6px;font-family:var(--font-display);font-size:20px;line-height:1.32;font-weight:800;color:#fff}
+.video-consult-head em{font-style:normal;font-size:11.5px;color:rgba(255,255,255,.5)}
+.video-consult-intent{display:flex;gap:8px;margin:16px 0 14px}
+.video-consult-intent button{flex:1;padding:11px 10px;border:1px solid rgba(255,255,255,.18);border-radius:11px;background:rgba(255,255,255,.05);color:rgba(255,255,255,.78);font-family:var(--font-display);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .16s}
+.video-consult-intent button.on{border-color:var(--accent);background:var(--accent);color:#111}
+.video-consult-form{display:grid;gap:12px}
+.video-consult-form label{display:grid;gap:5px}
+.video-consult-form label span{font-size:11.5px;letter-spacing:.04em;color:rgba(255,255,255,.62)}
+.video-consult-form input,.video-consult-form textarea{width:100%;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(255,255,255,.05);color:#fff;padding:11px 12px;font-size:13.5px;font-family:inherit;resize:vertical}
+.video-consult-form input::placeholder,.video-consult-form textarea::placeholder{color:rgba(255,255,255,.34)}
+.video-consult-form input:focus,.video-consult-form textarea:focus{outline:0;border-color:var(--accent)}
+.video-consult-submit{display:inline-flex;align-items:center;justify-content:center;gap:9px;margin-top:2px;border:1px solid var(--accent);border-radius:999px;background:var(--accent);color:#111;padding:13px 18px;font-family:var(--font-display);font-size:13.5px;font-weight:800;letter-spacing:.04em;cursor:pointer}
+.video-consult-submit em{font-style:normal}
+.video-consult-submit:disabled{opacity:.6;cursor:wait}
+.video-consult-ok{margin:4px 0 0;color:#7bdba0;font-size:12.5px;line-height:1.5}
+.video-consult-err{margin:4px 0 0;color:var(--accent);font-size:12.5px;line-height:1.5}
+@media (max-width:760px){
+  .video-consult{padding:0}
+  .video-consult-card{width:100%;border-radius:18px 18px 0 0;align-self:flex-end;max-height:88%}
+  @keyframes vConsultSlide{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+}
 .video-reel-track{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}
 .video-reel-track::-webkit-scrollbar{display:none}
 .video-reel-slide{height:100svh;scroll-snap-align:start;display:grid;place-items:center;position:relative;padding:56px 18px 110px}
