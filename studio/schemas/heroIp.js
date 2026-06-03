@@ -22,6 +22,21 @@ export default {
   name: "heroIp",
   title: "首頁圓環 IP",
   type: "document",
+  orderings: [
+    {
+      title: "圓環排序（小→大）",
+      name: "displayOrderAsc",
+      by: [
+        { field: "displayOrder", direction: "asc" },
+        { field: "_createdAt", direction: "asc" },
+      ],
+    },
+    {
+      title: "最新建立",
+      name: "createdDesc",
+      by: [{ field: "_createdAt", direction: "desc" }],
+    },
+  ],
   fields: [
     {
       name: "image",
@@ -56,8 +71,8 @@ export default {
       name: "displayOrder",
       title: "圓環排序",
       type: "number",
-      description: "數字越小越靠前；只影響首頁 IP 圓環。",
-      initialValue: 10,
+      description: "數字越小越靠前。請給每個 IP 設不同的數字（例如 1、2、3…），不要全部留 10，否則後台列表順序會不穩定、看起來像縮圖與名字對不上。",
+      initialValue: () => Math.floor(Date.now() / 1000) % 100000,
     },
     {
       name: "active",
