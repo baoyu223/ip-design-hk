@@ -1636,7 +1636,7 @@ const Cases = ({ cases, onOpen }) => {
   );
 };
 
-const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate }) => {
+const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate, allCases = [], onOpenCase }) => {
   const images = getCaseImages(data);
   const videos = (data.videos || []).filter(video => video && video.url);
   const pdfs = (data.pdfs || []).filter(pdf => pdf && pdf.url);
@@ -1801,6 +1801,33 @@ const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate }) 
             ))}
           </div>
         )}
+
+        {(() => {
+          const others = (allCases || []).filter(c => c && c._id !== data._id);
+          if (others.length < 1 || !onOpenCase) return null;
+          return (
+            <div className="case-more">
+              <div className="case-more-head">
+                <h4>其他案例</h4>
+                <button type="button" onClick={() => jumpFromDetail("cases")}>查看全部 →</button>
+              </div>
+              <div className="case-more-strip">
+                {others.slice(0, 12).map((c) => {
+                  const cover = getCaseImages(c)[0];
+                  return (
+                    <button type="button" className="case-more-card" key={c._id} onClick={() => onOpenCase(c)} aria-label={`查看 ${getCaseTitle(c)}`}>
+                      <span className="case-more-thumb">
+                        {cover ? <img src={cover.url} alt="" loading="lazy" /> : <span className="case-more-ph">{getCaseTitle(c).slice(0, 2)}</span>}
+                      </span>
+                      <strong>{getCaseTitle(c)}</strong>
+                      <em>{getCaseCategory(c)}</em>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

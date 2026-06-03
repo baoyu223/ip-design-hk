@@ -429,6 +429,8 @@ function App() {
             onPrev={() => openCaseByOffset(-1)}
             onNext={() => openCaseByOffset(1)}
             canNavigate={cases.length > 1}
+            allCases={cases}
+            onOpenCase={openCaseDetail}
             lang={lang}
           />
         )}
