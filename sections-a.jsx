@@ -438,7 +438,9 @@ const getHeroOrbitCases = (cases = []) => (
     .sort((a, b) => (Number(a.heroOrbitOrder) || 999) - (Number(b.heroOrbitOrder) || 999))
 );
 
-const buildHeroCharacters = (cases = [], heroIps = []) => {
+const buildHeroCharacters = (cases = [], heroIps = [], heroIpsReady = false) => {
+  // Don't show anything until Sanity data has loaded — avoids flash of 42 static placeholders
+  if (!heroIpsReady) return [];
   const fromHeroIps = (heroIps || [])
     .filter(item => item && item.src)
     .map((item) => ({
@@ -451,20 +453,17 @@ const buildHeroCharacters = (cases = [], heroIps = []) => {
       videoTitle: item.videoTitle || item.label || "",
     }));
   if (fromHeroIps.length) return fromHeroIps;
+  // Only use case-linked IPs as fallback (no static placeholder images)
   const linked = getHeroOrbitCases(cases).map((item, i) => ({
     src: item.heroCharacter,
     label: item.heroOrbitLabel || item.title || `IP ${i + 1}`,
     caseItem: item,
+    videoId: null, videoUrl: null, videoPoster: null, videoTitle: "",
   }));
-  if (linked.length) return linked;
-  return ORBIT_IP_IMAGES.slice(0, 18).map((item, i) => ({
-    ...item,
-    label: ["IP 角色", "潮玩公仔", "文旅 IP", "產品角色", "品牌人格", "授權延展"][i % 6],
-  }));
+  return linked.length ? linked : [];
 };
-
-const HeroCharacterOrbit = ({ cases = [], heroIps = [], onOpenCase, onOpenVideo }) => {
-  const items = buildHeroCharacters(cases, heroIps).slice(0, 24);
+const HeroCharacterOrbit = ({ cases = [], heroIps = [], heroIpsReady = false, onOpenCase, onOpenVideo }) => {
+  const items = buildHeroCharacters(cases, heroIps, heroIpsReady).slice(0, 24);
   const [hoverIndex, setHoverIndex] = React.useState(null);
   const [autoIndex, setAutoIndex] = React.useState(0);
 
@@ -562,25 +561,37 @@ const HERO_BARRAGE = [
 ];
 
 const HeroBarrage = () => {
-  const LANES = 9;
-  const comments = [...HERO_BARRAGE, ...HERO_BARRAGE.slice(0, 9)];
+  // deterministic pseudo-random (no Math.random — consistent across renders)
+  const h = (n) => ((Math.sin(n * 127.1 + 311.7) * 43758.5453) % 1 + 1) % 1;
+  const LANES = 7;
+  // distribute items to lanes via hash (not sequential) for irregular feel
+  const laneItems = Array.from({ length: LANES }, () => []);
+  HERO_BARRAGE.forEach((text, i) => {
+    const lane = Math.floor(h(i * 3.71) * LANES);
+    laneItems[lane].push({ text, i });
+  });
   return (
     <div className="hero-barrage" aria-label="燃點IP品牌策劃能力">
-      {comments.map((text, i) => {
-        const lane = i % LANES;
-        const top = 6 + lane * (88 / (LANES - 1));
-        const dur = 24 + ((i * 7) % 6) * 4;
-        const delay = -(((i * 5.3) % dur).toFixed(2));
-        const o = i % 3 === 0 ? 0.92 : i % 3 === 1 ? 0.66 : 0.48;
-        return (
-          <span
-            key={`${text}-${i}`}
-            className="hero-danmaku"
-            style={{ "--top": `${top.toFixed(1)}%`, "--dur": `${dur}s`, "--delay": `${delay}s`, "--o": o }}
-          >
-            {text}
-          </span>
-        );
+      {laneItems.map((items, lane) => {
+        const top = 7 + lane * (86 / (LANES - 1));
+        // varied speed per lane: 24–48s
+        const dur = 24 + lane * 3.5 + h(lane * 2.3) * 6;
+        const o = 0.48 + h(lane * 1.7) * 0.42;
+        return items.map(({ text, i }, pos) => {
+          // guaranteed non-overlap: base stagger = dur/count; add small hash nudge (≤20% of slot)
+          const slot = items.length > 1 ? dur / items.length : dur;
+          const nudge = h(i * 5.3 + lane) * slot * 0.2;
+          const delay = -(((pos * slot + nudge) % dur).toFixed(2));
+          return (
+            <span
+              key={`${text}-${lane}-${pos}`}
+              className="hero-danmaku"
+              style={{ "--top": `${top.toFixed(1)}%`, "--dur": `${dur.toFixed(1)}s`, "--delay": `${delay}s`, "--o": o.toFixed(2) }}
+            >
+              {text}
+            </span>
+          );
+        });
       })}
     </div>
   );
@@ -676,7 +687,7 @@ const HeroOrbit = ({ lang = "zh-hant" }) => {
   );
 };
 
-const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIps = [], onOpenCase, onOpenVideo }) => (
+const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIps = [], heroIpsReady = false, onOpenCase, onOpenVideo }) => (
   <section id="home" className="hero" data-screen-label="01 Hero">
     {/* corner service tags echoing poster */}
     <div className="hero-tags">
@@ -688,7 +699,9 @@ const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIp
 
     {variant === "sunburst" && (
       <div className="hero-bg">
-        <HeroCharacterOrbit cases={cases} heroIps={heroIps} onOpenCase={onOpenCase} onOpenVideo={onOpenVideo} />
+        <Sunburst className="sun" color="var(--paper)" />
+        <HeroBarrage />
+        <HeroCharacterOrbit cases={cases} heroIps={heroIps} heroIpsReady={heroIpsReady} onOpenCase={onOpenCase} onOpenVideo={onOpenVideo} />
       </div>
     )}
     {variant === "minimal" && (
@@ -742,8 +755,8 @@ const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIp
   </section>
 );
 
-const Hero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIps = [], onOpenCase, onOpenVideo }) => (
-  variant === "orbit" ? <HeroOrbit lang={lang} /> : <LegacyHero variant={variant} lang={lang} cases={cases} heroIps={heroIps} onOpenCase={onOpenCase} onOpenVideo={onOpenVideo} />
+const Hero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIps = [], heroIpsReady = false, onOpenCase, onOpenVideo }) => (
+  variant === "orbit" ? <HeroOrbit lang={lang} /> : <LegacyHero variant={variant} lang={lang} cases={cases} heroIps={heroIps} heroIpsReady={heroIpsReady} onOpenCase={onOpenCase} onOpenVideo={onOpenVideo} />
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1801,6 +1814,12 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, initialSeriesIndex = 
   const [seriesActive, setSeriesActive] = React.useState({});
   const [seriesFading, setSeriesFading] = React.useState({});
   const switchSeriesItem = React.useCallback((slideIndex, targetIndex) => {
+    // pause ALL videos in this slide before switching so old audio stops
+    const root = reelRef.current;
+    if (root) {
+      const slide = root.querySelector(`[data-video-index="${slideIndex}"]`);
+      if (slide) slide.querySelectorAll("video").forEach(v => { v.pause(); v.currentTime = 0; });
+    }
     setSeriesFading(prev => ({ ...prev, [slideIndex]: true }));
     window.setTimeout(() => {
       setSeriesActive(prev => ({ ...prev, [slideIndex]: targetIndex }));
@@ -1980,7 +1999,7 @@ const VideoReelOverlay = ({ videos = [], initialIndex = 0, initialSeriesIndex = 
               const activeItem = seriesItems[seriesActive[index] || 0] || video;
               return (
                 <>
-                  <video className={seriesFading[index] ? "is-switching" : ""} src={getVideoPreviewSrc(activeItem.url)} poster={activeItem.poster || ""} controls playsInline preload={Math.abs(index - initialIndex) <= 1 ? "metadata" : "none"} />
+                  <video key={`video-${index}-${seriesActive[index] || 0}`} className={seriesFading[index] ? "is-switching" : ""} src={getVideoPreviewSrc(activeItem.url)} poster={activeItem.poster || ""} controls playsInline preload={Math.abs(index - initialIndex) <= 1 ? "metadata" : "none"} />
                   <VideoBarrage video={activeItem} />
                 </>
               );

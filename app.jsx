@@ -61,6 +61,7 @@ function App() {
   const [cases, setCases] = React.useState([]);
   const [siteVideos, setSiteVideos] = React.useState([]);
   const [heroIps, setHeroIps] = React.useState([]);
+  const [heroIpsReady, setHeroIpsReady] = React.useState(false);
   const [openCase, setOpenCase] = React.useState(null);
   const [videoFeed, setVideoFeed] = React.useState(null);
 
@@ -337,6 +338,7 @@ function App() {
         const caseList = Array.isArray(result.cases) ? result.cases : [];
         const heroIpList = Array.isArray(result.heroIps) ? result.heroIps.filter(item => item && item.src) : [];
         setHeroIps(heroIpList);
+        setHeroIpsReady(true);
         const rawVideos = Array.isArray(result.siteVideos) ? result.siteVideos : [];
         const videoList = rawVideos
           .filter(video => video && video.url)
@@ -410,7 +412,7 @@ function App() {
       <ShapeDefs />
       <Nav active={active} onNav={onNav} theme={t.theme} onThemeToggle={() => setTweak("theme", t.theme === "light" ? "dark" : "light")} lang={lang} onLangChange={changeLang} />
       <main>
-        <Hero variant={t.heroVariant} lang={lang} cases={cases} heroIps={heroIps} onOpenCase={openCaseDetail} onOpenVideo={openVideoById} />
+        <Hero variant={t.heroVariant} lang={lang} cases={cases} heroIps={heroIps} heroIpsReady={heroIpsReady} onOpenCase={openCaseDetail} onOpenVideo={openVideoById} />
         <Marquee lang={lang} />
         <VideoSpotlight cases={cases} siteVideos={siteVideos} onOpenVideo={openVideoFeed} onOpenCase={openRelatedCase} lang={lang} />
         <About lang={lang} />
