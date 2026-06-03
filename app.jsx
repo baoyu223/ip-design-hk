@@ -180,11 +180,11 @@ function App() {
 
   const openVideoById = (videoId, videoUrl, videoPoster, videoTitle) => {
     if (!videoUrl) return;
-    // try to find in allPlayableVideos first, fall back to inline object
     const found = allPlayableVideos.find(v => v._id === videoId);
     openVideoFeed(found || { _id: videoId, url: videoUrl, poster: videoPoster, title: videoTitle, seriesTitle: videoTitle, seriesIndex: 0 });
   };
 
+  const openVideoFeed = (video) => {
     if (!video?.url) return;
     const index = Math.max(0, allPlayableVideos.findIndex(item => (
       item.url === video.url

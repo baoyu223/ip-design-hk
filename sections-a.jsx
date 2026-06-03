@@ -506,22 +506,23 @@ const HeroCharacterOrbit = ({ cases = [], heroIps = [], onOpenCase, onOpenVideo 
         const x = 50 + Math.cos(angle) * 46;
         const y = 50 + Math.sin(angle) * 46;
         const hasVideo = !!(item.videoId && item.videoUrl);
+        const isClickable = hasVideo || !!item.caseItem;
         const buttonProps = hasVideo
           ? {
               type: "button",
-              onClick: () => onOpenVideo && onOpenVideo(item.videoId, item.videoUrl, item.videoPoster, item.videoTitle),
+              onClick: () => { setHoverIndex(i); onOpenVideo && onOpenVideo(item.videoId, item.videoUrl, item.videoPoster, item.videoTitle); },
               "aria-label": `播放 ${item.videoTitle || item.label || "IP 視頻"}`,
             }
           : item.caseItem
           ? {
               type: "button",
-              onClick: () => onOpenCase && onOpenCase(item.caseItem),
+              onClick: () => { setHoverIndex(i); onOpenCase && onOpenCase(item.caseItem); },
               "aria-label": `查看 ${getCaseTitle(item.caseItem)} 案例`,
             }
           : { type: "button", "aria-label": item.label };
         return (
           <button
-            className={`hero-character-card ${item.caseItem ? "is-linked" : ""} ${hoverIndex === i ? "is-active" : ""} ${(!isManual && activeIndex === i) ? "is-auto" : ""}`}
+            className={`hero-character-card ${isClickable ? "is-linked" : ""} ${hoverIndex === i ? "is-active" : ""} ${(!isManual && activeIndex === i) ? "is-auto" : ""}`}
             key={`${item.src}-${i}`}
             style={{ "--x": `${x}%`, "--y": `${y}%`, "--d": `${-(i % 8) * 0.22}s` }}
             onMouseEnter={() => setHoverIndex(i)}
