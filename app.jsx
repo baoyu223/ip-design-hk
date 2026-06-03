@@ -178,7 +178,13 @@ function App() {
     return Array.from(seen.values());
   }, [cases, siteVideos]);
 
-  const openVideoFeed = (video) => {
+  const openVideoById = (videoId, videoUrl, videoPoster, videoTitle) => {
+    if (!videoUrl) return;
+    // try to find in allPlayableVideos first, fall back to inline object
+    const found = allPlayableVideos.find(v => v._id === videoId);
+    openVideoFeed(found || { _id: videoId, url: videoUrl, poster: videoPoster, title: videoTitle, seriesTitle: videoTitle, seriesIndex: 0 });
+  };
+
     if (!video?.url) return;
     const index = Math.max(0, allPlayableVideos.findIndex(item => (
       item.url === video.url
@@ -248,7 +254,11 @@ function App() {
         label,
         displayOrder,
         "src": image.asset->url,
-        "caseId": relatedCase->_id
+        "caseId": relatedCase->_id,
+        "videoId": relatedVideo->_id,
+        "videoUrl": relatedVideo->file.asset->url,
+        "videoPoster": relatedVideo->poster.asset->url,
+        "videoTitle": relatedVideo->title
       },
       "cases": *[_type == "case" && !(_id in path("drafts.**"))] | order(featured desc, year desc, _createdAt desc){
         _id, _createdAt, title, description, category, year,
@@ -400,7 +410,7 @@ function App() {
       <ShapeDefs />
       <Nav active={active} onNav={onNav} theme={t.theme} onThemeToggle={() => setTweak("theme", t.theme === "light" ? "dark" : "light")} lang={lang} onLangChange={changeLang} />
       <main>
-        <Hero variant={t.heroVariant} lang={lang} cases={cases} heroIps={heroIps} onOpenCase={openCaseDetail} />
+        <Hero variant={t.heroVariant} lang={lang} cases={cases} heroIps={heroIps} onOpenCase={openCaseDetail} onOpenVideo={openVideoById} />
         <Marquee lang={lang} />
         <VideoSpotlight cases={cases} siteVideos={siteVideos} onOpenVideo={openVideoFeed} onOpenCase={openRelatedCase} lang={lang} />
         <About lang={lang} />

@@ -42,8 +42,15 @@ export default {
       name: "relatedCase",
       title: "點擊跳轉到哪個作品案例",
       type: "reference",
-      description: "選擇後，訪客在首頁點這個 IP，會打開對應的作品案例詳情。不選則只展示、不可點擊。",
+      description: "選案例後，訪客在首頁點這個 IP，會打開對應的作品案例詳情。「案例」和「視頻」二選一，同時填以視頻優先。",
       to: [{ type: "case" }],
+    },
+    {
+      name: "relatedVideo",
+      title: "點擊播放哪條視頻",
+      type: "reference",
+      description: "選視頻後，訪客在首頁點這個 IP，會直接彈出播放這條視頻。「視頻」優先於「案例」；不選則用案例跳轉。",
+      to: [{ type: "siteVideo" }],
     },
     {
       name: "displayOrder",
@@ -65,17 +72,21 @@ export default {
       title: "label",
       media: "image",
       caseTitle: "relatedCase.title",
+      videoTitle: "relatedVideo.title",
       active: "active",
       order: "displayOrder",
     },
-    prepare({ title, media, caseTitle, active, order }) {
+    prepare({ title, media, caseTitle, videoTitle, active, order }) {
+      const link = videoTitle
+        ? `播放視頻：${toTrad(videoTitle)}`
+        : caseTitle ? `跳轉案例：${toTrad(caseTitle)}` : "未設點擊跳轉";
       const bits = [
         active === false ? "（已隱藏）" : null,
-        caseTitle ? `跳轉：${toTrad(caseTitle)}` : "未設跳轉",
+        link,
         Number.isFinite(order) ? `排序 ${order}` : null,
       ].filter(Boolean).join(" · ");
       return {
-        title: toTrad(title || caseTitle || "圓環 IP"),
+        title: toTrad(title || videoTitle || caseTitle || "圓環 IP"),
         subtitle: bits,
         media,
       };

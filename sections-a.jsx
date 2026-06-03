@@ -445,6 +445,10 @@ const buildHeroCharacters = (cases = [], heroIps = []) => {
       src: item.src,
       label: item.label || "",
       caseItem: item.caseId ? (cases || []).find(c => c._id === item.caseId) || null : null,
+      videoId: item.videoId || null,
+      videoUrl: item.videoUrl || null,
+      videoPoster: item.videoPoster || null,
+      videoTitle: item.videoTitle || item.label || "",
     }));
   if (fromHeroIps.length) return fromHeroIps;
   const linked = getHeroOrbitCases(cases).map((item, i) => ({
@@ -459,7 +463,7 @@ const buildHeroCharacters = (cases = [], heroIps = []) => {
   }));
 };
 
-const HeroCharacterOrbit = ({ cases = [], heroIps = [], onOpenCase }) => {
+const HeroCharacterOrbit = ({ cases = [], heroIps = [], onOpenCase, onOpenVideo }) => {
   const items = buildHeroCharacters(cases, heroIps).slice(0, 24);
   const [hoverIndex, setHoverIndex] = React.useState(null);
   const [autoIndex, setAutoIndex] = React.useState(0);
@@ -489,7 +493,7 @@ const HeroCharacterOrbit = ({ cases = [], heroIps = [], onOpenCase }) => {
         <span>IP CHARACTER RING</span>
         <b>自動輪播 · 移到角色放大 · 點擊查看作品</b>
       </div>
-      <div className="hero-character-ring" aria-hidden="true"></div>
+
       {activeItem && (
         <div className="hero-character-spotlight" aria-hidden="true" key={`${activeIndex}-${activeItem.src}`}>
           <img src={activeItem.src} alt="" />
@@ -501,7 +505,14 @@ const HeroCharacterOrbit = ({ cases = [], heroIps = [], onOpenCase }) => {
         const angle = (i / items.length) * Math.PI * 2 - Math.PI / 2;
         const x = 50 + Math.cos(angle) * 46;
         const y = 50 + Math.sin(angle) * 46;
-        const buttonProps = item.caseItem
+        const hasVideo = !!(item.videoId && item.videoUrl);
+        const buttonProps = hasVideo
+          ? {
+              type: "button",
+              onClick: () => onOpenVideo && onOpenVideo(item.videoId, item.videoUrl, item.videoPoster, item.videoTitle),
+              "aria-label": `播放 ${item.videoTitle || item.label || "IP 視頻"}`,
+            }
+          : item.caseItem
           ? {
               type: "button",
               onClick: () => onOpenCase && onOpenCase(item.caseItem),
@@ -664,7 +675,7 @@ const HeroOrbit = ({ lang = "zh-hant" }) => {
   );
 };
 
-const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIps = [], onOpenCase }) => (
+const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIps = [], onOpenCase, onOpenVideo }) => (
   <section id="home" className="hero" data-screen-label="01 Hero">
     {/* corner service tags echoing poster */}
     <div className="hero-tags">
@@ -672,13 +683,11 @@ const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIp
       <div><b>品牌視覺 VI</b> · 門店形象設計</div>
       <div><b>包裝策劃</b> · 系列視覺設計</div>
     </div>
-    <HeroBarrage />
+    
 
     {variant === "sunburst" && (
       <div className="hero-bg">
-        <Sunburst className="sun" color="var(--paper)" />
-        <div className="tech-field"></div>
-        <HeroCharacterOrbit cases={cases} heroIps={heroIps} onOpenCase={onOpenCase} />
+        <HeroCharacterOrbit cases={cases} heroIps={heroIps} onOpenCase={onOpenCase} onOpenVideo={onOpenVideo} />
       </div>
     )}
     {variant === "minimal" && (
@@ -701,7 +710,7 @@ const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIp
         <div className="hero-mark hero-mark-image">
           <img className="hero-wordmark hero-wordmark-black" src="assets/brand-wordmark-black-alpha.png" alt="燃點" />
           <img className="hero-wordmark hero-wordmark-white" src="assets/brand-wordmark-white-alpha.png" alt="燃點" />
-          <Sparkle size={64} color="var(--accent)" className="sparkle" />
+          <Sparkle size={64} color="var(--accent)" className="sparkle" style={{display:"none"}} />
         </div>
         <div className="hero-sub-en">IGNITION&nbsp;&nbsp;BRAND&nbsp;&nbsp;DESIGN</div>
         <div className="hero-tag">{tt(lang, "heroTag")}</div>
@@ -709,7 +718,7 @@ const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIp
     </div>
 
     <div className="shell">
-      <div className="hero-bottom">
+      <div className="hero-bottom" style={{display:"none"}}>
         <div>
           <div className="lbl">EST.</div>
           <div className="v">Hong Kong · 2010</div>
@@ -732,8 +741,8 @@ const LegacyHero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIp
   </section>
 );
 
-const Hero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIps = [], onOpenCase }) => (
-  variant === "orbit" ? <HeroOrbit lang={lang} /> : <LegacyHero variant={variant} lang={lang} cases={cases} heroIps={heroIps} onOpenCase={onOpenCase} />
+const Hero = ({ variant = "sunburst", lang = "zh-hant", cases = [], heroIps = [], onOpenCase, onOpenVideo }) => (
+  variant === "orbit" ? <HeroOrbit lang={lang} /> : <LegacyHero variant={variant} lang={lang} cases={cases} heroIps={heroIps} onOpenCase={onOpenCase} onOpenVideo={onOpenVideo} />
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
