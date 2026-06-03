@@ -439,7 +439,6 @@ function App() {
         <Contact selectedTier={selectedTier} onTierChange={setSelectedTier} lang={lang} />
       </main>
       <Footer lang={lang} />
-      <ShareDock onNav={onNav} lang={lang} />
 
       <TweaksPanel title="Tweaks · 燃點">
         <TweakSection label="主题模式" />

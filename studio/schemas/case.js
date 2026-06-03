@@ -22,6 +22,58 @@ const toTrad = (value) => {
   return Array.from(text).map((ch) => TRAD_CHAR_MAP[ch] || ch).join("");
 };
 
+// ── 分類選項 ──────────────────────────────────────────
+const CATEGORY_OPTIONS = [
+  { title: "IP / 潮玩",  value: "IP / 潮玩" },
+  { title: "品牌 IP",   value: "品牌IP" },
+  { title: "產品 IP",   value: "產品IP" },
+  { title: "文創 IP",   value: "文創IP" },
+  { title: "明星 IP",   value: "明星IP" },
+  { title: "地標 IP",   value: "地標IP" },
+  { title: "VI 重塑",   value: "VI 重塑" },
+  { title: "包裝",       value: "包裝" },
+  { title: "聯名",       value: "聯名" },
+  { title: "其他",       value: "其他" },
+];
+
+// ── 服務內容選項 ──────────────────────────────────────
+const SERVICE_OPTIONS = [
+  { title: "品牌IP塑造",     value: "品牌IP塑造" },
+  { title: "IP形象設計",     value: "IP形象設計" },
+  { title: "IP角色延展",     value: "IP角色延展" },
+  { title: "IP短視頻",       value: "IP短視頻" },
+  { title: "IP形象授權代理", value: "IP形象授權代理" },
+  { title: "IP授權運營",     value: "IP授權運營" },
+  { title: "VI 品牌設計",    value: "VI品牌設計" },
+  { title: "包裝設計",       value: "包裝設計" },
+  { title: "品牌策劃",       value: "品牌策劃" },
+  { title: "IP 潮玩設計",    value: "IP潮玩設計" },
+  { title: "IP 衍生品設計",  value: "IP衍生品設計" },
+  { title: "短視頻拍攝製作", value: "短視頻拍攝製作" },
+];
+
+// ── 關鍵詞標籤選項 ────────────────────────────────────
+const KEYWORD_OPTIONS = [
+  { title: "品牌IP全案",           value: "品牌IP全案" },
+  { title: "IP產品開發",           value: "IP產品開發" },
+  { title: "IP動畫延展",           value: "IP動畫延展" },
+  { title: "IP授權服務",           value: "IP授權服務" },
+  { title: "原創IP設計",           value: "原創IP設計" },
+  { title: "動漫IP卡通",           value: "動漫IP卡通" },
+  { title: "原創卡通授權",         value: "原創卡通授權" },
+  { title: "IP潮玩設計",           value: "IP潮玩設計" },
+  { title: "文創IP設計",           value: "文創IP設計" },
+  { title: "餐飲IP形象",           value: "餐飲IP形象" },
+  { title: "食品卡通IP形象設計",   value: "食品卡通IP形象設計" },
+  { title: "服裝卡通IP形象設計",   value: "服裝卡通IP形象設計" },
+  { title: "香港IP設計公司",       value: "香港IP設計公司" },
+  { title: "香港著名IP設計",       value: "香港著名IP設計" },
+  { title: "IP衍生品設計",         value: "IP衍生品設計" },
+  { title: "童裝IP形象設計",       value: "童裝IP形象設計" },
+  { title: "盲盒IP設計",           value: "盲盒IP設計" },
+  { title: "盲盒IP形象設計",       value: "盲盒IP形象設計" },
+];
+
 export default {
   name: "case",
   title: "案例 · 作品集",
@@ -29,25 +81,21 @@ export default {
   fields: [
     { name: "title", title: "案例標題", type: "string", validation: (R) => R.required().min(2).max(80) },
     { name: "description", title: "案例描述", type: "string", validation: (R) => R.required().max(120) },
+
+    // ── 分類（多選）──────────────────────────────────
     {
-      name: "category", title: "分類標籤", type: "string",
-      options: {
-        list: [
-          { title: "IP / 潮玩", value: "IP / 潮玩" },
-          { title: "IP / 3D", value: "IP / 3D" },
-          { title: "VI 重塑", value: "VI 重塑" },
-          { title: "VI / 數碼", value: "VI / 數碼" },
-          { title: "包裝", value: "包裝" },
-          { title: "聯名", value: "聯名" },
-          { title: "戰略", value: "戰略" },
-          { title: "其他", value: "其他" },
-        ],
-        layout: "radio",
-      },
-      validation: (R) => R.required(),
+      name: "category",
+      title: "分類標籤（可多選）",
+      type: "array",
+      description: "可選擇多個分類；前台會顯示第一個為主標籤。",
+      of: [{ type: "string" }],
+      options: { list: CATEGORY_OPTIONS, layout: "grid" },
+      validation: (R) => R.required().min(1),
     },
+
     { name: "year", title: "年份", type: "number", validation: (R) => R.required().integer().min(2000).max(2099) },
     { name: "image", title: "案例封面圖", type: "image", options: { hotspot: true } },
+
     {
       name: "showInHeroOrbit",
       title: "放到首頁 IP 角色圓環",
@@ -95,18 +143,27 @@ export default {
 
     // ===== 詳情頁字段 =====
     { name: "client", title: "客戶名稱", type: "string" },
+
+    // ── 服務內容（多選預設標籤）─────────────────────
     {
-      name: "services", title: "服務內容", type: "array",
-      of: [{ type: "string" }], options: { layout: "tags" },
-    },
-    {
-      name: "tags", title: "案例關鍵詞標籤", type: "array",
-      description: "用於前台案例標籤與 SEO 語義，例如：IP品牌設計、文創IP、文旅IP、文具IP設計、玩具IP設計。",
+      name: "services",
+      title: "服務內容（可多選）",
+      type: "array",
+      description: "選擇本案例涉及的服務項目；前台詳情頁會顯示為標籤。",
       of: [{ type: "string" }],
-      options: {
-        layout: "tags",
-      },
+      options: { list: SERVICE_OPTIONS, layout: "grid" },
     },
+
+    // ── 案例關鍵詞標籤（多選 + 可自訂）─────────────
+    {
+      name: "tags",
+      title: "案例關鍵詞標籤（可多選）",
+      type: "array",
+      description: "用於前台展示與 SEO。可勾選預設詞，也可在下方輸入框自訂添加。",
+      of: [{ type: "string" }],
+      options: { list: KEYWORD_OPTIONS, layout: "grid" },
+    },
+
     { name: "body", title: "詳細描述", type: "array", of: [{ type: "block" }] },
     {
       name: "videos", title: "影片 / 視頻（可指定前台位置）", type: "array",
@@ -123,7 +180,6 @@ export default {
               name: "placement",
               title: "這條影片放到哪裡？",
               type: "string",
-              description: "如果選首頁，會出現在「關於我們」上方的視頻板塊；如果選客戶評價，會出現在客戶評價下方。",
               options: {
                 list: [
                   { title: "首頁視頻板塊", value: "home" },
@@ -138,7 +194,6 @@ export default {
               name: "displayOrder",
               title: "顯示排序",
               type: "number",
-              description: "數字越小越靠前；首頁視頻板塊會優先顯示排序最前的一條。",
               initialValue: 10,
             },
             {

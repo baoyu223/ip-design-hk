@@ -1,14 +1,14 @@
 // sections.jsx — page sections for Ignition Brand Design
 
 const NAV = [
-  { id: "home",     zhHant: "首頁",       zhHans: "首页",       en: "HOME" },
-  { id: "about",    zhHant: "關於我們",   zhHans: "关于我们",   en: "ABOUT" },
-  { id: "services", zhHant: "主營業務",   zhHans: "主营业务",   en: "SERVICES" },
-  { id: "method",   zhHant: "設計方法論", zhHans: "设计方法论", en: "METHOD" },
-  { id: "clients",  zhHant: "服務客戶",   zhHans: "服务客户",   en: "CLIENTS" },
-  { id: "cases",    zhHant: "服務案例",   zhHans: "服务案例",   en: "WORK" },
-  { id: "pricing",  zhHant: "服務階梯",   zhHans: "服务阶梯",   en: "PRICING" },
-  { id: "contact",  zhHant: "聯繫我們",   zhHans: "联系我们",   en: "CONTACT" },
+  { id: "home",       zhHant: "首頁",       zhHans: "首页",       en: "HOME" },
+  { id: "about",      zhHant: "關於我們",   zhHans: "关于我们",   en: "ABOUT" },
+  { id: "brand-film", zhHant: "短視頻作品", zhHans: "短视频作品", en: "VIDEOS" },
+  { id: "services",   zhHant: "主營業務",   zhHans: "主营业务",   en: "SERVICES" },
+  { id: "method",     zhHant: "設計方法論", zhHans: "设计方法论", en: "METHOD" },
+  { id: "cases",      zhHant: "服務案例",   zhHans: "服务案例",   en: "WORK" },
+  { id: "pricing",    zhHant: "服務階梯",   zhHans: "服务阶梯",   en: "PRICING" },
+  { id: "contact",    zhHant: "聯繫我們",   zhHans: "联系我们",   en: "CONTACT" },
 ];
 
 const I18N_TEXT = {
@@ -361,9 +361,15 @@ const Nav = ({ active, onNav, theme = "dark", onThemeToggle, lang = "zh-hant", o
           <button type="button" className={lang === "zh-hans" ? "on" : ""} onClick={() => onLangChange && onLangChange("zh-hans")}>简</button>
           <button type="button" className={lang === "en" ? "on" : ""} onClick={() => onLangChange && onLangChange("en")}>EN</button>
         </div>
-        <a className="nav-cta" href="#contact" onClick={(e)=>{e.preventDefault();onNav("contact")}}>
-          <span className="dot"></span>{tt(lang, "navCta")}
-        </a>
+        <button
+            type="button"
+            className="nav-cta"
+            onClick={(e) => { e.preventDefault(); onNav("contact"); }}
+            aria-label="合作詢啓"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}} aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.9-.9L3 21l1.9-5.6a8.5 8.5 0 0 1-.9-3.9A8.38 8.38 0 0 1 12.5 3a8.38 8.38 0 0 1 8.5 8.5z"/></svg>
+            <span>合作</span>
+          </button>
         <button className="theme-toggle" type="button" onClick={onThemeToggle} aria-label="切換黑白風格">
           <span>{theme === "light" ? tt(lang, "themeLight") : tt(lang, "themeDark")}</span>
         </button>
@@ -486,6 +492,17 @@ const HeroCharacterOrbit = ({ cases = [], heroIps = [], heroIpsReady = false, on
   const activeIndex = isManual ? hoverIndex : (items.length ? autoIndex % items.length : null);
   const activeItem = activeIndex == null ? null : items[activeIndex];
 
+  // shared open logic — used by both ring cards and the centre spotlight
+  const openItem = (item) => {
+    if (!item) return;
+    if (item.videoId && item.videoUrl) {
+      onOpenVideo && onOpenVideo(item.videoId, item.videoUrl, item.videoPoster, item.videoTitle);
+    } else if (item.caseItem) {
+      onOpenCase && onOpenCase(item.caseItem);
+    }
+  };
+  const activeClickable = !!(activeItem && ((activeItem.videoId && activeItem.videoUrl) || activeItem.caseItem));
+
   return (
     <div className="hero-character-orbit" aria-label="首頁 IP 角色作品入口" onMouseLeave={() => setHoverIndex(null)}>
       <div className="hero-character-hint">
@@ -494,10 +511,25 @@ const HeroCharacterOrbit = ({ cases = [], heroIps = [], heroIpsReady = false, on
       </div>
 
       {activeItem && (
-        <div className="hero-character-spotlight" aria-hidden="true" key={`${activeIndex}-${activeItem.src}`}>
-          <img src={activeItem.src} alt="" />
-          <span>{toTrad(activeItem.label || activeItem.caseItem?.title || "IP 角色")}</span>
-        </div>
+        activeClickable ? (
+          <button
+            type="button"
+            className="hero-character-spotlight is-linked"
+            key={`${activeIndex}-${activeItem.src}`}
+            onClick={() => openItem(activeItem)}
+            aria-label={(activeItem.videoId && activeItem.videoUrl)
+              ? `播放 ${activeItem.videoTitle || activeItem.label || "IP 視頻"}`
+              : `查看 ${getCaseTitle(activeItem.caseItem)} 案例`}
+          >
+            <img src={activeItem.src} alt="" />
+            <span>{toTrad(activeItem.label || activeItem.caseItem?.title || "IP 角色")}</span>
+          </button>
+        ) : (
+          <div className="hero-character-spotlight" aria-hidden="true" key={`${activeIndex}-${activeItem.src}`}>
+            <img src={activeItem.src} alt="" />
+            <span>{toTrad(activeItem.label || activeItem.caseItem?.title || "IP 角色")}</span>
+          </div>
+        )
       )}
       <div className={`hero-character-cards ${isManual ? "is-paused" : ""}`}>
       {items.map((item, i) => {
@@ -1286,10 +1318,18 @@ const IP_COMPONENTS = {
 
 const getCaseTitle = (c) => toTrad(c.h || c.title || "Untitled Case");
 const getCaseDescription = (c) => toTrad(c.zh || c.description || "");
-const getCaseCategory = (c) => toTrad(c.tag || c.category || "WORK");
+const getCaseCategory = (c) => {
+  const cats = Array.isArray(c.category) ? c.category : (c.tag || c.category ? [c.tag || c.category] : []);
+  return cats.length ? toTrad(cats[0]) : "WORK";
+};
+const getCaseCategories = (c) => {
+  const cats = Array.isArray(c.category) ? c.category : (c.tag || c.category ? [c.tag || c.category] : []);
+  return cats.map(toTrad);
+};
 const getCaseTags = (c) => {
-  const tags = [c.category, ...(c.tags || []), ...(c.services || [])].filter(Boolean);
-  return [...new Set(tags)].slice(0, 8).map(toTrad);
+  const cats = Array.isArray(c.category) ? c.category : (c.category ? [c.category] : []);
+  const tags = [...cats, ...(c.tags || []), ...(c.services || [])].filter(Boolean);
+  return [...new Set(tags)].slice(0, 12).map(toTrad);
 };
 const getCaseImages = (c) => {
   const gallery = (c.gallery || []).filter(item => item && item.url);
@@ -1724,16 +1764,16 @@ const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate, al
                   <span>{data.client}</span>
                 </div>
               )}
-              {data.services?.length > 0 && (
+              {getCaseCategories(data).length > 0 && (
                 <div>
-                  <b>SERVICES</b>
-                  <span>{data.services.join(" · ")}</span>
+                  <b>分類</b>
+                  <div className="case-chip-row">{getCaseCategories(data).map(t => <span key={t} className="case-chip cat">{t}</span>)}</div>
                 </div>
               )}
-              {getCaseTags(data).length > 0 && (
+              {data.services?.length > 0 && (
                 <div>
-                  <b>TAGS</b>
-                  <span>{getCaseTags(data).join(" · ")}</span>
+                  <b>服務</b>
+                  <div className="case-chip-row">{data.services.map(s => <span key={s} className="case-chip svc">{toTrad(s)}</span>)}</div>
                 </div>
               )}
               <div>
@@ -1785,6 +1825,16 @@ const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate, al
           </div>
         )}
 
+        {/* ── 版權聲明 ── */}
+        <div className="case-copyright">
+          <span className="case-copyright-icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><path d="M10 1.667A8.333 8.333 0 1 0 18.333 10 8.342 8.342 0 0 0 10 1.667zm0 15A6.667 6.667 0 1 1 16.667 10 6.674 6.674 0 0 1 10 16.667zm.833-10.834h-1.666v5h1.666v-5zm0 6.667h-1.666v1.667h1.666V12.5z"/></svg>
+          </span>
+          <span>
+            <strong>© 燃點品牌設計 · 原創 IP 版權聲明</strong>
+            <em>本作品所有 IP 形象、車標設計及表達內容均為原創版權，已在香港及內地依法登記。未經授權任意複製、模仿、轉載或商業使用，將依法追責。如需授權合作，歡迎聯絡我們。</em>
+          </span>
+        </div>
         <LicenseInquiry data={data} />
 
         {pdfs.length > 0 && (
@@ -1824,6 +1874,19 @@ const CaseModal = ({ data, onClose, onOpenVideo, onPrev, onNext, canNavigate, al
                     </button>
                   );
                 })}
+              </div>
+            </div>
+          );
+        })()}
+
+        {(() => {
+          const kws = (data.tags || []).map(toTrad).filter(Boolean);
+          if (!kws.length) return null;
+          return (
+            <div className="case-keywords">
+              <span className="case-keywords-label">關鍵詞</span>
+              <div className="case-keywords-chips">
+                {kws.map(k => <span key={k} className="case-chip kw">{k}</span>)}
               </div>
             </div>
           );
