@@ -74,11 +74,94 @@ const fetchCase = async (caseId) => {
   return data && data.result ? data.result : null;
 };
 
+// ── Analytics helpers ──────────────────────────────────────────────────────
+const today = () => new Date().toISOString().slice(0, 10);
+const safeJson = (v, fallback) => { try { return JSON.parse(v); } catch { return fallback; } };
+
+const trackEvent = async (kv, body) => {
+  const { event, id = "", title = "", country = "??" } = body;
+  const d = today();
+  // Daily summary
+  const dayKey = `day:${d}`;
+  const day = safeJson(await kv.get(dayKey), { visits: 0, caseViews: 0, videoPlays: 0 });
+  if (event === "page_view") day.visits = (day.visits || 0) + 1;
+  if (event === "case_view") day.caseViews = (day.caseViews || 0) + 1;
+  if (event === "video_play") day.videoPlays = (day.videoPlays || 0) + 1;
+  await kv.put(dayKey, JSON.stringify(day), { expirationTtl: 60 * 60 * 24 * 60 }); // 60 days
+  // Per-item totals
+  if (id && (event === "case_view" || event === "video_play")) {
+    const itemKey = `${event === "case_view" ? "case" : "video"}:${id}`;
+    const item = safeJson(await kv.get(itemKey), { title: "", views: 0, plays: 0, lastSeen: d });
+    item.title = title || item.title;
+    item.lastSeen = d;
+    if (event === "case_view") item.views = (item.views || 0) + 1;
+    if (event === "video_play") item.plays = (item.plays || 0) + 1;
+    await kv.put(itemKey, JSON.stringify(item));
+  }
+  // Recent events (last 80)
+  const recent = safeJson(await kv.get("recent"), []);
+  recent.unshift({ event, id, title, country, ts: Date.now() });
+  await kv.put("recent", JSON.stringify(recent.slice(0, 80)));
+};
+
+const getAnalytics = async (kv) => {
+  // Last 14 days summary
+  const days = [];
+  const now = new Date();
+  let todayVisits = 0, weekVisits = 0, totalCaseViews = 0, totalVideoPlays = 0;
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(now); d.setDate(d.getDate() - i);
+    const key = `day:${d.toISOString().slice(0, 10)}`;
+    const val = safeJson(await kv.get(key), { visits: 0, caseViews: 0, videoPlays: 0 });
+    days.push({ date: d.toISOString().slice(0, 10), ...val });
+    if (i === 0) todayVisits = val.visits || 0;
+    if (i < 7) weekVisits += val.visits || 0;
+    totalCaseViews += val.caseViews || 0;
+    totalVideoPlays += val.videoPlays || 0;
+  }
+  // Top cases & videos (scan known keys from recent)
+  const recent = safeJson(await kv.get("recent"), []);
+  const caseIds = [...new Set(recent.filter(e => e.event === "case_view").map(e => e.id))].slice(0, 20);
+  const videoIds = [...new Set(recent.filter(e => e.event === "video_play").map(e => e.id))].slice(0, 10);
+  const topCases = (await Promise.all(caseIds.map(async id => {
+    const v = safeJson(await kv.get(`case:${id}`), null);
+    return v ? { id, ...v } : null;
+  }))).filter(Boolean).sort((a, b) => (b.views || 0) - (a.views || 0));
+  const topVideos = (await Promise.all(videoIds.map(async id => {
+    const v = safeJson(await kv.get(`video:${id}`), null);
+    return v ? { id, ...v } : null;
+  }))).filter(Boolean).sort((a, b) => (b.plays || 0) - (a.plays || 0));
+  return { todayVisits, weekVisits, totalCaseViews, totalVideoPlays, days: days.reverse(), topCases, topVideos, recent: recent.slice(0, 30) };
+};
+
 export default {
   async fetch(request, env) {
     const requestUrl = new URL(request.url);
     const caseId = requestUrl.searchParams.get("case");
     const lang = requestUrl.searchParams.get("lang") || "zh-hant";
+    // ── Track endpoint ──────────────────────────────────────────────────────
+    if (requestUrl.pathname === "/api/track" && request.method === "POST") {
+      if (env.ANALYTICS_KV) {
+        try {
+          const body = await request.json();
+          const country = request.cf?.country || "??";
+          await trackEvent(env.ANALYTICS_KV, { ...body, country });
+        } catch (e) {}
+      }
+      return new Response("ok", { status: 200, headers: { "access-control-allow-origin": "*" } });
+    }
+    if (requestUrl.pathname === "/api/track" && request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-methods": "POST,OPTIONS", "access-control-allow-headers": "content-type" } });
+    }
+    // ── Analytics read endpoint ─────────────────────────────────────────────
+    if (requestUrl.pathname === "/api/analytics" && request.method === "GET") {
+      const secret = requestUrl.searchParams.get("secret") || "";
+      const expected = env.ANALYTICS_SECRET || "ibd2024";
+      if (secret !== expected) return new Response("Unauthorized", { status: 401 });
+      if (!env.ANALYTICS_KV) return new Response(JSON.stringify({ error: "KV not bound" }), { status: 503, headers: { "content-type": "application/json" } });
+      const data = await getAnalytics(env.ANALYTICS_KV);
+      return new Response(JSON.stringify(data), { headers: { "content-type": "application/json", "cache-control": "no-store" } });
+    }
     const wantsHtml = request.method === "GET" && (requestUrl.pathname === "/" || requestUrl.pathname === "/index.html");
     if (!wantsHtml) {
       return env.ASSETS.fetch(request);

@@ -1,5 +1,16 @@
 // app.jsx — Ignition Brand Design — main app
 
+// ── Analytics tracker (fire-and-forget) ──────────────────────────────────
+const track = (event, data = {}) => {
+  try {
+    fetch("/api/track", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ event, ...data }),
+    }).catch(() => {});
+  } catch (e) {}
+};
+
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "theme": "dark",
   "accent": "#F5F1E8",
@@ -61,6 +72,7 @@ function App() {
   const [cases, setCases] = React.useState([]);
   const [siteVideos, setSiteVideos] = React.useState([]);
   const [heroIps, setHeroIps] = React.useState([]);
+  React.useEffect(() => { track("page_view"); }, []);
   const [heroIpsReady, setHeroIpsReady] = React.useState(false);
   const [openCase, setOpenCase] = React.useState(null);
   const [videoFeed, setVideoFeed] = React.useState(null);
@@ -187,6 +199,7 @@ function App() {
 
   const openVideoFeed = (video) => {
     if (!video?.url) return;
+    track("video_play", { id: video._id || "", title: video.title || video.seriesTitle || "" });
     const index = Math.max(0, allPlayableVideos.findIndex(item => (
       item.url === video.url
       || (Array.isArray(item.seriesVideos) && item.seriesVideos.some(seriesItem => seriesItem && seriesItem.url === video.url))
