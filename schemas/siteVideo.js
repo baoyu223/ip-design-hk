@@ -1,4 +1,5 @@
 // schemas/siteVideo.js — 獨立視頻管理
+import { VideoFileInput } from "../components/VideoFileInput";
 
 const TRAD_MAP = {
   视频: "視頻", 说明: "說明", 标题: "標題", 首页: "首頁", 主页: "主頁", 专门: "專門",
@@ -35,6 +36,7 @@ export default {
       type: "file",
       description: "這條是此作品視頻的主視頻；建議 MP4，文件不要太大。若視頻很大，請先壓縮後再上傳。",
       options: { accept: "video/mp4,video/quicktime,video/webm" },
+      components: { input: VideoFileInput },
       validation: (R) => R.custom((value) => (
         value?.asset?._ref ? true : "建議上傳視頻文件；沒有視頻文件時，前台不會展示這條視頻。"
       )).warning(),
@@ -64,6 +66,7 @@ export default {
               type: "file",
               description: "建議 MP4；前台會和主視頻一起連續播放。",
               options: { accept: "video/mp4,video/quicktime,video/webm" },
+              components: { input: VideoFileInput },
             },
             {
               name: "poster",

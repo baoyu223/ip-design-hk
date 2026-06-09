@@ -22,6 +22,39 @@ const toTrad = (value) => {
   return Array.from(text).map((ch) => TRAD_CHAR_MAP[ch] || ch).join("");
 };
 
+const CASE_KEYWORD_OPTIONS = [
+  "IPdesign",
+  "IP品牌設計",
+  "IP品牌策劃",
+  "IP形象設計",
+  "超級IP品牌策劃設計",
+  "燃點品牌設計",
+  "燃點品牌策劃設計",
+  "Ignition Brand Design",
+  "品牌設計",
+  "品牌全案",
+  "品牌策劃設計",
+  "潮玩設計",
+  "潮玩IP",
+  "文創IP設計",
+  "文旅IP",
+  "兒童服裝IP",
+  "文具IP設計",
+  "玩具IP設計",
+  "食品包裝IP",
+  "飲品品牌IP",
+  "城市IP",
+  "展覽IP",
+  "授權IP",
+  "IP商業化",
+  "IP周邊開發",
+  "角色世界觀",
+  "3D角色設計",
+  "VI視覺設計",
+  "包裝設計",
+  "聯名策劃",
+].map((item) => ({ title: item, value: item }));
+
 export default {
   name: "case",
   title: "案例 · 作品集",
@@ -101,10 +134,11 @@ export default {
     },
     {
       name: "tags", title: "案例關鍵詞標籤", type: "array",
-      description: "用於前台案例標籤與 SEO 語義，例如：IP品牌設計、文創IP、文旅IP、文具IP設計、玩具IP設計。",
+      description: "可多選；用於前台案例標籤與 SEO 語義。需要更多關鍵詞時，也可在下方自行輸入新增。",
       of: [{ type: "string" }],
       options: {
-        layout: "tags",
+        list: CASE_KEYWORD_OPTIONS,
+        layout: "grid",
       },
     },
     { name: "body", title: "詳細描述", type: "array", of: [{ type: "block" }] },
