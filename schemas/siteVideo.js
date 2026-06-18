@@ -47,6 +47,20 @@ export default {
       options: { hotspot: true },
     },
     {
+      name: "titleTone",
+      title: "視頻標題顏色",
+      type: "string",
+      description: "控制前台視頻卡片的標題顏色。封面偏暗選白色，封面偏淺選黑色。",
+      options: {
+        list: [
+          { title: "白色標題（適合深色 / 彩色封面）", value: "light" },
+          { title: "黑色標題（適合淺色封面）", value: "dark" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "light",
+    },
+    {
       name: "seriesVideos",
       title: "系列視頻（加在同一個作品名稱下面）",
       type: "array",
@@ -125,12 +139,14 @@ export default {
       title: "title",
       subtitle: "caption",
       showOnHome: "showOnHome",
+      titleTone: "titleTone",
       caseTitle: "relatedCase.title",
       media: "poster",
     },
-    prepare({ title, subtitle, showOnHome, caseTitle, media }) {
+    prepare({ title, subtitle, showOnHome, titleTone, caseTitle, media }) {
       const places = [
         showOnHome ? "首頁主視頻" : null,
+        titleTone === "dark" ? "黑色標題" : "白色標題",
         caseTitle ? `案例：${toTrad(caseTitle)}` : null,
       ].filter(Boolean).join(" · ");
       return {
